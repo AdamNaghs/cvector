@@ -15,6 +15,14 @@
  user must first ensure the err is VEC_OK before accessing the data or index
  if the err is VEC_OK then the data and index can be safely read.
  You can you unpack_type to do this for you.
+ ex of Return_types
+ 	/* pop from vector v's 5th index */
+  	Return_int ret = v->find(v,5);
+   	int* i = unpack_int(ret); /* if we unpack successfully then we can access all of ret's data, otherwise we the program will crash and tell you the error */
+    	Vec_Error err = v->remove(v,ret.index); 
+     	ASSERT_ON_ERR(err);
+    	
+   	
 
  # Under the hood
  The user should not access the internal variables, and should
