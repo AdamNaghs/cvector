@@ -28,7 +28,7 @@
     }                                                                \
   } while (0)
 
-#define PRINTF_ASSERT(cond,fstring,...)                                           \
+#define LOGF_ASSERT(stream,cond,fstring,...)                                           \
   do                                                                 \
   {                                                                  \
     if (!(cond))                                                     \
@@ -42,6 +42,7 @@
       assert(cond);                                                  \
     }                                                                \
   } while (0)
+
 
 
 #endif /* COLORED_ASSERT_H */
