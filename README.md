@@ -15,7 +15,8 @@
  user must first ensure the err is VEC_OK before accessing the data or index
  if the err is VEC_OK then the data and index can be safely read.
  You can you unpack_type to do this for you.
- ex of Return_types
+ ex of Return_types:
+ 
  	/* pop from vector v's 5th index */
   	Return_int ret = v->find(v,5);
    	int* i = unpack_int(ret); /* if we unpack successfully then we can access all of ret's data, otherwise we the program will crash and tell you the error */
@@ -37,8 +38,10 @@
  Comparisons for ints, floats, and strs(stdlib strcmp) are provided.
  You can call create_name to safely make a vector if you want to set it equal to a vector.
  ex: 
+ 
 	 Vec_Int v = create_Vec_Int(compare_ints);
  as opposed to
+ 
 	 Vec_Int v;
 	 Vec_Int_init(v,compare_ints);
 
