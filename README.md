@@ -1,7 +1,8 @@
 # cvector
 
-# DEFINE_VEC
+# DEFINE_VEC(type,name)
  Creates a Vec type named {name}
+ 
  In Vec: data is the array, size is always 1 larger than the data in the
  array, capacity is the max amount of data we can hold before resizing ex: v
  has a size of 10, v.realloc(v,20); v still has a size of 10, but now a
