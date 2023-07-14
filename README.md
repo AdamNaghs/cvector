@@ -56,7 +56,7 @@
 		VEC_GIVEN_NULL_ERROR = 4
 	} Vec_Error;
 
-Behavior of Note: (all for functions called through func ptr)
+Behavior of Note: (all for functions called through func ptr except create/init)
  1. Freeing will leave the vec usable still as long as you call it though functions.
  2. Use free to empty the vector and set the size and capacity to 0.
  3. If you realloc/compact while the vec size is 0 the capacity will become 1.
