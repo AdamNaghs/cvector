@@ -15,6 +15,19 @@
  user must first ensure the err is VEC_OK before accessing the data or index
  if the err is VEC_OK then the data and index can be safely read.
  You can you unpack_type to do this for you.
+ ex of Return_types:
+ 
+ 	/* pop from vector v where we find 5 (first occurance) */
+  	Return_int ret = v->find(v,5);
+ 	int* i = unpack_int(ret); 
+	Vec_Error err = v->remove(v,ret.index); 
+	ASSERT_ON_ERR(err);
+If we unpack successfully then we can access all of ret's data, otherwise we the program will crash and tell you the error.
+After unpacking there is no reason for there to be an error but to be sure ASSERT_ON_ERR to ensure you end the program,
+get an error and follow the error tree in stderr.
+	
+    	
+   	
 
  # Under the hood
  The user should not access the internal variables, and should
@@ -29,8 +42,10 @@
  Comparisons for ints, floats, and strs(stdlib strcmp) are provided.
  You can call create_name to safely make a vector if you want to set it equal to a vector.
  ex: 
+ 
 	 Vec_Int v = create_Vec_Int(compare_ints);
  as opposed to
+ 
 	 Vec_Int v;
 	 Vec_Int_init(v,compare_ints);
 
@@ -57,7 +72,21 @@
 		VEC_GIVEN_NULL_ERROR = 4
 	} Vec_Error;
 
-Behavior of Note: (all for functions called through func ptr except create/init)
+ # Comparisons
+ There is no way for me to know if some unique data type is equal so I leave it to a function pointer which reaturns
+ a Comparison or -1 for LESS, 0 for EQUAL, 1 for GREATER
+ 
+	 typedef enum
+	{
+		LESS = -1,
+		EQUAL = 0,
+		GREATER = 1,
+	} Comparison;
+I've written compare_ints and compare_floats functions and in the stdlib you can use strcmp to compare strings.
+Any other types need their own compare method to be written and passed as an argument upon initialization.
+
+
+# Behavior of Note: (all for functions called through func ptr except create/init)
  1. Freeing will leave the vec usable still as long as you call it though functions.
  2. Use free to empty the vector and set the size and capacity to 0.
  3. If you realloc/compact while the vec size is 0 the capacity will become 1.
