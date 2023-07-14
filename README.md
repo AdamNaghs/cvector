@@ -18,8 +18,9 @@
  ex of Return_types:
  
  	/* pop from vector v's 5th index */
-  	Return_int ret = v->find(v,5);
-   	int* i = unpack_int(ret); /* if we unpack successfully then we can access all of ret's data, otherwise we the program will crash and tell you the error */
+  	Return_int ret = v->find(v,5
+   	/* if we unpack successfully then we can access all of ret's data, otherwise we the program will crash and tell you the error */
+   	int* i = unpack_int(ret); 
     	Vec_Error err = v->remove(v,ret.index); 
      	ASSERT_ON_ERR(err);
     	
