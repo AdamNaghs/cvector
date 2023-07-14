@@ -17,7 +17,7 @@
  You can you unpack_type to do this for you.
  ex of Return_types:
  
- 	/* pop from vector v's 5th index */
+ 	/* pop from vector v where we find 5 (first occurance) */
   	Return_int ret = v->find(v,5);
  	int* i = unpack_int(ret); 
 	Vec_Error err = v->remove(v,ret.index); 
