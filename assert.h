@@ -1,5 +1,5 @@
-#ifndef ASSERT_PRINT_H
-#define ASSERT_PRINT_H
+#ifndef ASSERT_INTERNAL_H
+#define ASSERT_INTERNAL_H
 
 #include <assert.h>
 #include <stdio.h>
@@ -44,4 +44,4 @@
   } while (0)
 
 
-#endif /* ASSERT_PRINT_H */
+#endif /* ASSERT_INTERNAL_H */
