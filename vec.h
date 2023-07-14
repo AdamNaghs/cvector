@@ -8,7 +8,7 @@
 #include <math.h>
 #include <assert.h>
 /*
-	To ensure modularity, the user can and often must define their own comparison
+	To ensure modularity, the user can, and must for unique struct, define their own comparison
 	function to be used in the vector to ensure intended behavior.
 
 	Some common comparison functions are provided for the user but still must be
