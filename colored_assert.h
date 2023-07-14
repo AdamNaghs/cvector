@@ -1,5 +1,5 @@
-#ifndef ASSERT_INTERNAL_H
-#define ASSERT_INTERNAL_H
+#ifndef COLORED_ASSERT_H
+#define COLORED_ASSERT_H
 
 #include <assert.h>
 #include <stdio.h>
@@ -44,4 +44,4 @@
   } while (0)
 
 
-#endif /* ASSERT_INTERNAL_H */
+#endif /* COLORED_ASSERT_H */

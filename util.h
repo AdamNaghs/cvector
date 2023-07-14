@@ -13,7 +13,7 @@ typedef int16_t int16;
 typedef int32_t int32;
 typedef int64_t int64;
 
-
+/* fast square root*/
 float f_sqrt(float number)
 {
     int i;
@@ -28,6 +28,7 @@ float f_sqrt(float number)
     return number * y;
 }
 
+/* random number generator */
 uint32 u_randi(uint32 index)
 {
     index = (index << 13) ^ index;
