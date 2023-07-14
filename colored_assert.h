@@ -28,21 +28,19 @@
     }                                                                \
   } while (0)
 
-#define LOGF_ASSERT(stream,cond,fstring,...)                                           \
-  do                                                                 \
-  {                                                                  \
-    if (!(cond))                                                     \
-    {                                                                \
-      fprintf(stderr, RED "Assertion failed:  '%s'\n" RESET, #cond); \
-      assert(cond);                                                  \
-    }                                                                \
-    else                                                             \
-    {                                                                \
-      fprintf(stderr, GRN "Assertion passed:  '%s' " fstring RESET, #cond,__VA_ARGS__); \
-      assert(cond);                                                  \
-    }                                                                \
+#define FPRINTF_ASSERT(stream, cond, fstring, ...)                                          \
+  do                                                                                     \
+  {                                                                                      \
+    if (!(cond))                                                                         \
+    {                                                                                    \
+      fprintf(stderr, RED "Assertion failed:  '%s'\n" RESET, #cond);                     \
+      assert(cond);                                                                      \
+    }                                                                                    \
+    else                                                                                 \
+    {                                                                                    \
+      fprintf(stderr, GRN "Assertion passed:  '%s' " fstring RESET, #cond, __VA_ARGS__); \
+      assert(cond);                                                                      \
+    }                                                                                    \
   } while (0)
-
-
 
 #endif /* COLORED_ASSERT_H */

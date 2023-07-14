@@ -14,7 +14,7 @@ typedef int32_t int32;
 typedef int64_t int64;
 
 /* fast square root*/
-float f_sqrt(float number)
+float inv_sqrt(float number)
 {
     int i;
     float x, y;
@@ -27,7 +27,10 @@ float f_sqrt(float number)
     y = y * (1.5 - (x * y * y));
     return number * y;
 }
-
+float f_sqrt(float number )
+{
+    return 1 / inv_sqrt(number);
+}
 /* random number generator */
 uint32 u_randi(uint32 index)
 {
