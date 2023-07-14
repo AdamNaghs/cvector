@@ -8,7 +8,7 @@
  has a size of 10, v.realloc(v,20); v still has a size of 10, but now a
  capacity of 20;
 
-# ReturnItypes
+# Return_types
  Creates a Return type named Return_{type}
  In Return: contains ptr to data, index of data, and error
  When using Return_{type}
