@@ -75,8 +75,18 @@ get an error and follow the error tree in stderr.
  # Comparisons
  There is no way for me to know if some unique data type is equal so I leave it to a function pointer which reaturns
  a Comparison or -1 for LESS, 0 for EQUAL, 1 for GREATER
+ 
+	 typedef enum
+	{
+		LESS = -1,
+		EQUAL = 0,
+		GREATER = 1,
+	} Comparison;
+I've written compare_ints and compare_floats functions and in the stdlib you can use strcmp to compare strings.
+Any other types need their own compare method to be written and passed as an argument upon initialization.
 
-Behavior of Note: (all for functions called through func ptr except create/init)
+
+# Behavior of Note: (all for functions called through func ptr except create/init)
  1. Freeing will leave the vec usable still as long as you call it though functions.
  2. Use free to empty the vector and set the size and capacity to 0.
  3. If you realloc/compact while the vec size is 0 the capacity will become 1.
