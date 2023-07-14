@@ -72,6 +72,10 @@ get an error and follow the error tree in stderr.
 		VEC_GIVEN_NULL_ERROR = 4
 	} Vec_Error;
 
+ # Comparisons
+ There is no way for me to know if some unique data type is equal so I leave it to a function pointer which reaturns
+ a Comparison or -1 for LESS, 0 for EQUAL, 1 for GREATER
+
 Behavior of Note: (all for functions called through func ptr except create/init)
  1. Freeing will leave the vec usable still as long as you call it though functions.
  2. Use free to empty the vector and set the size and capacity to 0.
