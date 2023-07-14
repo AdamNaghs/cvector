@@ -32,7 +32,7 @@ Comparison compare_floats(const float *a, const float *b)
 	if (fabs(*a - *b) < epsilon)
 		return EQUAL; /* Numbers are close enough to be equal */
 	if (*a > *b)
-		return GREATER; /* a is greater than b */
+		return GREATER; 
 	return LESS;		
 }
 
