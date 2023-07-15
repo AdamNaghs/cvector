@@ -224,7 +224,7 @@ typedef enum
 	{                                                                                                      \
 		RETURN_IF_NULL(v, "clear_" #name, VEC_GIVEN_NULL_ERROR);                                           \
 		for (size_t i = 0; i < (v->size); i++)                                                             \
-			memcpy(&(v->data)[i], 0, sizeof((v->data)[i]));                                                \
+			memcpy((&((v->data)[i])), 0, sizeof((v->data)[i]));                                                \
 		(v->size) = 0;                                                                                     \
 		return VEC_OK;                                                                                     \
 	}                                                                                                      \
@@ -311,7 +311,7 @@ typedef enum
 		for (i = 0; i < (v->size); i++)                                                                    \
 		{                                                                                                  \
 			if ((v->compare_vals)(&((v->data)[i]), &value) == EQUAL)                                       \
-				return internal_pack_##type(&(v->data)[i], (size_t)i, VEC_OK);                             \
+				return internal_pack_##type((&((v->data)[i])), (size_t)i, VEC_OK);                             \
 		}                                                                                                  \
 		return internal_pack_##type(NULL, -1, VEC_CANT_FIND_ERROR);                                        \
 	}                                                                                                      \
@@ -324,7 +324,7 @@ typedef enum
                                                                                                            \
 		if (err != VEC_OK)                                                                                 \
 			return internal_pack_##type(NULL, -1, err);                                                    \
-		return internal_pack_##type(&(v->data)[index], index, VEC_OK);                                     \
+		return internal_pack_##type((&((v->data)[index])), index, VEC_OK);                                     \
 	}                                                                                                      \
                                                                                                            \
 	Vec_Error name##_init(name *v, Vec_Compare_Func_##type compare_values)                                 \

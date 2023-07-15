@@ -19,19 +19,24 @@ int main()
 
     Vec_Int v;
     CREATE_VEC(&v, compare_ints, int, Vec_Int);
-    Vec_Int *vec = &v;
-
-    vec->push_back(vec, 1);
+    //Vec_Int_init(&v,compare_ints);
+    v.push_back(&v,1);
 
     alloc_test(0);
-    MEM_DEBUG_INSPECT(stderr);
     int *i = malloc(sizeof(int));
     int k;
     int *j = &k;
-    free(i);
-    (vec->free)(vec);
     //free(j);
+    v.push_back(&v,2);
+    //fprintf(stderr,"%d\n",(v.read_capacity(&v)));
+    //MEM_DEBUG_INSPECT(stderr);
 
+    v.push_back(&v,3);
+    //fprintf(stderr,"%d\n",(v.read_capacity(&v)));
+    //MEM_DEBUG_INSPECT(stderr);
+
+    //free(i);
+    (v.free)(&v);
     MEM_DEBUG_END();
     return 0;
 }

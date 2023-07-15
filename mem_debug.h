@@ -44,6 +44,13 @@
 
 /* Implementation below */
 
+typedef struct 
+{
+    bool known;
+    char* name;
+} Name;
+
+
 /* every time we allocate memory we save a Debug_Data to a Vec */
 typedef struct
 {
@@ -51,6 +58,7 @@ typedef struct
     char *file;
     uint32 line;
     uint32 realloc_count;
+    Name alias;
 } Debug_Data;
 
 /* define Vec_Mem*/
@@ -100,7 +108,8 @@ void *debug_malloc(size_t size, uint32 line, char *file, char *resize_statement)
         fprintf(stderr,
                 GRN "debug_malloc called on line %d, in file %s. Statement used to resize was (%s) is equal to %d.\n" RESET,
                 line, file, resize_statement, size);
-    Debug_Data d = {.data = ptr, .file = file, .line = line, .realloc_count = 0};
+    Name n = {.known = false, .name = "Lengthy_Placeholder"};
+    Debug_Data d = {.data = ptr, .file = file, .line = line, .realloc_count = 0, .alias = n};
     debug_vec.push_back(&debug_vec, d);
     return ptr;
 }
@@ -118,12 +127,15 @@ void *debug_realloc(void *ptr, size_t size, uint32 line, char *file, char *resiz
     Debug_Data *d = unpack_Debug_Data(debug_vec.find(&debug_vec, in));
     if (PRINT_ALL)
         fprintf(stderr,
-                GRN "debug_realloc called  on line %d, in file %s. Statement used to resize was (%s) is equal to %d. Pointer named (%s) has been resized %d times.\n" RESET,
-                line, file, resize_statement, size, name, ++(d->realloc_count));
-
+                GRN "debug_realloc called on line %d, in file %s. Statement used to resize was (%s) is equal to %d. Pointer named (%s) has been resized %d times.\n" RESET,
+                line, file, resize_statement, size, name, d->realloc_count + 1);
+    d->alias.name = name;
+    d->alias.known = true;
+    d->realloc_count++;
     d->data = new_ptr;
     return new_ptr;
 }
+
 
 /* should act as constructor like malloc */
 void *debug_calloc(size_t num, size_t size, uint32 line, char *file, char *resize_statement)
@@ -133,7 +145,8 @@ void *debug_calloc(size_t num, size_t size, uint32 line, char *file, char *resiz
         fprintf(stderr,
                 GRN "debug_calloc called on line %d, in file %s. Statement used to resize was (%s) is equal to %d.\n" RESET,
                 line, file, resize_statement, size);
-    Debug_Data d = {ptr, __FILE__, __LINE__, 0};
+    Name n = {.known = false, .name = "Lengthy_Placeholder"};
+    Debug_Data d = {.data = ptr, .file = __FILE__, .line = __LINE__, .realloc_count = 0, .alias = n};
     debug_vec.push_back(&debug_vec, d);
     return ptr;
 }
@@ -149,7 +162,8 @@ void debug_free(void *ptr, uint32 line, char *file, char *var_name)
                 RED "debug_free attempting to free non-dynamic/stack memory on (line %d, file %s). Variable named (%s)\n" RESET,
                 line, file, var_name);
     }
-    RETURN_ON_ERROR(ret.err,"debug_free likely attempted to free non-dynamic/stack memory, check last error to trace stack memory");
+    if (ret.err != VEC_OK)
+        return;
     Debug_Data *found = unpack_Debug_Data(ret);
     if (PRINT_ALL)
     {
@@ -162,17 +176,23 @@ void debug_free(void *ptr, uint32 line, char *file, char *var_name)
 }
 
 /* print all unfreed pointers */
-void find_leaks(void)
+void *find_leaks(void)
 {
     int i;
     for (i = 0; i < debug_vec.size; i++)
     {
+        char* n = "Unknown_Ptr_Alias";
         Debug_Data *d = unpack_Debug_Data(debug_vec.at(&debug_vec, i));
-        fprintf(stderr, RED "Pointer at address %p not freed. Initialized on line %d in file %s.\n" RESET,
-                d->data, d->line, d->file);
+        if (d->alias.known) n = d->alias.name;
+        fprintf(stderr, RED "Pointer '%s' at address %p not freed. Initialized on line %d in file %s.\n" RESET,
+                n, d->data, d->line, d->file);
         free(d->data);
     }
     debug_vec.free(&debug_vec);
+    if (i == 0)
+        fprintf(stderr, GRN "No Leaks Found :)\n" RESET);
+    else
+        fprintf(stderr, RED "Found & Patched %d leaks.\n" RESET, i);
 }
 
 #if DEBUG_MEM == 1
