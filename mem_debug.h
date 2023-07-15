@@ -13,23 +13,9 @@
 #define PRINT_ALL 1
 
 /*
-   Use these four macros to run the memory debugger
+   Use these twp macros to run the memory debugger
    You can ignore the rest of the file unless you are interest in implementation
 */
-
-/*
-    Place before main function.
-    Init global variable.
-*/
-#define MEM_DEBUG_INIT() \
-    ;                    \
-    Vec_Mem debug_vec
-
-/*
-    MUST BE PLACE AT ABSOLUTE BEGINNING OF MAIN FUNCTION!
-    Start saving memory being allocated.
-*/
-#define MEM_DEBUG_START() (init_leak_finder())
 
 /*
     MUST BE PLACED AT ABSOLUTE END OF MAIN FUNCTION!
@@ -62,8 +48,7 @@ typedef struct
     Name alias;
 } Debug_Data;
 
-/* define Vec_Mem*/
-DEFINE_VEC(Debug_Data, Vec_Mem);
+
 
 Comparison debug_data_cmp(const Debug_Data *a, const Debug_Data *b)
 {
@@ -75,6 +60,8 @@ Comparison debug_data_cmp(const Debug_Data *a, const Debug_Data *b)
     return GREATER;
 }
 
+/* define Vec_Mem*/
+DEFINE_VEC(Debug_Data, Vec_Mem, debug_data_cmp);
 /* define external variable (initialized with MEM_DEBUG_INIT) */
 
 static Vec_Mem debug_vec = 
@@ -82,20 +69,6 @@ static Vec_Mem debug_vec =
     .data = 0,
     .size = 0,
     .capacity = 0,
-    .compare_vals = debug_data_cmp,
-    .clear = vec_clear_Vec_Mem,
-    .free = vec_free_Vec_Mem,
-    .read_size = vec_size_Vec_Mem,
-    .read_capacity = vec_capacity_Vec_Mem,
-    .empty = vec_empty_Vec_Mem,
-    .compact = vec_compact_Vec_Mem,
-    .realloc = vec_realloc_Vec_Mem,
-    .push_back = vec_push_back_Vec_Mem,
-    .remove = vec_remove_Vec_Mem,
-    .swap = vec_swap_Vec_Mem,
-    .find = vec_find_Vec_Mem,
-    .at = vec_at_Vec_Mem,
-    .insert = vec_insert_Vec_Mem,
 } ;
 
 
@@ -103,8 +76,7 @@ static Vec_Mem debug_vec =
 
 #define PICK_COLOR (i % 2 == 0 ? CYN : MAG)
 
-    void
-    debug_inspect_memory(FILE *stream)
+void debug_inspect_memory(FILE *stream)
 {
     size_t i;
     size_t size = vec_size_Vec_Mem(&debug_vec);
@@ -123,7 +95,7 @@ static Vec_Mem debug_vec =
 void init_leak_finder(void)
 {
     fprintf(stderr, GRN "Beginning Memory Debug.\n" RESET);
-    debug_vec = create_Vec_Mem(debug_data_cmp);
+    debug_vec = create_Vec_Mem();
 }
 
 /* malloc acts as a constructor for Debug_Data */

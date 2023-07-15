@@ -142,7 +142,7 @@ typedef enum
 #define VEC_INITIAL_CAPACITY 0
 
 /* define implementation */
-#define DEFINE_VEC(type, name)                                                                             \
+#define DEFINE_VEC(type, name, compare_func)                                                                             \
 	DEFINE_RETURN_TYPE_IMPL(type);                                                                         \
 	typedef struct name name;                                                                              \
 	typedef Comparison (*Vec_Compare_Func_##type)(const type *, const type *);                             \
@@ -310,7 +310,7 @@ typedef enum
 		int i;                                                                                             \
 		for (i = 0; i < (v->size); i++)                                                                    \
 		{                                                                                                  \
-			if ((v->compare_vals)(&((v->data)[i]), &value) == EQUAL)                                       \
+			if ((compare_func)(&((v->data)[i]), &value) == EQUAL)                                       \
 				return internal_pack_##type((&((v->data)[i])), (size_t)i, VEC_OK);                             \
 		}                                                                                                  \
 		return internal_pack_##type(NULL, -1, VEC_CANT_FIND_ERROR);                                        \
@@ -327,14 +327,14 @@ typedef enum
 		return internal_pack_##type((&((v->data)[index])), index, VEC_OK);                                     \
 	}                                                                                                      \
                                                                                                            \
-	Vec_Error name##_init(name *v, Vec_Compare_Func_##type compare_values)                                 \
+	Vec_Error name##_init(name *v)                                 \
 	{                                                                                                      \
 		RETURN_IF_NULL(v, "init_" #name, VEC_GIVEN_NULL_ERROR);                                            \
 		(v->data) = (type *)malloc(VEC_INITIAL_CAPACITY * sizeof(type));                                   \
 		RETURN_IF_NULL((v->data), "init_" #name, VEC_ALLOC_ERROR);                                         \
 		(v->size) = 0;                                                                                     \
 		(v->capacity) = VEC_INITIAL_CAPACITY;                                                              \
-		(v->compare_vals) = compare_values;                                                                \
+		(v->compare_vals) = compare_func;                                                                \
 		(v->clear) = vec_clear_##name;                                                                     \
 		(v->free) = vec_free_##name;                                                                       \
 		(v->read_size) = vec_size_##name;                                                                  \
@@ -350,10 +350,10 @@ typedef enum
 		(v->insert) = vec_insert_##name;                                                                   \
 		return VEC_OK;                                                                                     \
 	}                                                                                                      \
-	name create_##name(Vec_Compare_Func_##type compare_values)                                             \
+	name create_##name(void)                                             \
 	{                                                                                                      \
 		name init_vec;                                                                                     \
-		Vec_Error init_err = name##_init(&init_vec, compare_values);                                       \
+		Vec_Error init_err = name##_init(&init_vec);                                       \
 		if (init_err != VEC_OK)                                                                            \
 		{                                                                                                  \
 			fprintf(stderr, "Vec Init Error: in vector on line %d in file %s. \
