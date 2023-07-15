@@ -68,6 +68,7 @@ Otherwise you'll be told your Vec was allocated wherever you defined it with DEF
  and the program can continue to run. 
  You can either manually handle these errors or unpack Return_types and ASSERT_ON_ERROR.
  By unpacking which will assert on error
+ Functions that return a size return SIZE_MAX on error.
 
   # Vec_Error Codes
 	  typedef enum
