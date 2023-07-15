@@ -1,6 +1,6 @@
 # cvector
 
-# DEFINE_VEC(type,name)
+# DEFINE_VEC(type,name,compare_func)
  Creates a Vec type named {name}
  
  In Vec: data is the array, size is always 1 larger than the data in the

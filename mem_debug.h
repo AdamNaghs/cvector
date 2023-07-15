@@ -23,7 +23,7 @@
     End mem debugging and print all unfreed pointers.
     Will also free all unfreed memory.
 */
-#define MEM_DEBUG_END() (find_leaks())
+#define MEM_DEBUG_END(stream) (find_leaks(stream))
 
 /*
     Print info of all pointers currently allocated
@@ -99,7 +99,7 @@ void *debug_malloc(size_t size, uint32 line, char *file, char *resize_statement)
     void *ptr = malloc(size);
 #if PRINT_ALL
     fprintf(stderr,
-            BLU "debug_malloc called on line %d, in file %s. Statement used to resize was (%s) is equal to %d.\n" RESET,
+            BLU "debug_malloc called on line %d, in file %s. Statement used to resize was (%s) is equal to %d bytes.\n" RESET,
             line, file, resize_statement, size);
 #endif
     Name n = {.known = false, .name = "Lengthy_Placeholder"};
@@ -121,7 +121,7 @@ void *debug_realloc(void *ptr, size_t size, uint32 line, char *file, char *resiz
     Debug_Data *d = unpack_Debug_Data(vec_find_Vec_Mem(&debug_vec, in));
 #if PRINT_ALL
     fprintf(stderr,
-            YEL "debug_realloc called on line %d, in file %s. Statement used to resize was (%s) is equal to %d. Pointer named (%s) has been resized %d times.\n" RESET,
+            YEL "debug_realloc called on line %d, in file %s. Statement used to resize was (%s) is equal to %d bytes. Pointer named (%s) has been resized %d times.\n" RESET,
             line, file, resize_statement, size, name, d->realloc_count + 1);
 #endif
     d->alias.name = name;
@@ -137,7 +137,7 @@ void *debug_calloc(size_t num, size_t size, uint32 line, char *file, char *resiz
     void *ptr = calloc(num, size);
 #if PRINT_ALL
     fprintf(stderr,
-            YEL "debug_calloc called on line %d, in file %s. Statement used to resize was (%s) is equal to %d.\n" RESET,
+            YEL "debug_calloc called on line %d, in file %s. Statement used to resize was (%s) is equal to %d bytes.\n" RESET,
             line, file, resize_statement, size);
 #endif
     Name n = {.known = false, .name = "Lengthy_Placeholder"};
@@ -146,6 +146,8 @@ void *debug_calloc(size_t num, size_t size, uint32 line, char *file, char *resiz
     return ptr;
 }
 
+
+/* should update to check if you incremented the ptr and tried to free that ptr instead of the original head */
 /* freak out if we try to free data not in the Vec */
 void debug_free(void *ptr, uint32 line, char *file, char *var_name)
 {
@@ -170,7 +172,7 @@ void debug_free(void *ptr, uint32 line, char *file, char *var_name)
 }
 
 /* print all unfreed pointers */
-void *find_leaks(void)
+void *find_leaks(FILE* stream)
 {
     int i;
     for (i = 0; i < vec_size_Vec_Mem(&debug_vec); i++)
@@ -179,17 +181,22 @@ void *find_leaks(void)
         Debug_Data *d = unpack_Debug_Data(vec_at_Vec_Mem(&debug_vec, i));
         if (d->alias.known)
             n = d->alias.name;
-        fprintf(stderr, RED "Pointer '%s' at address %p not freed." WHT " Allocated on line %d in file %s.\n" RESET,
+        fprintf(stream, RED "Pointer '%s' at address %p not freed." WHT " Allocated on line %d in file %s.\n" RESET,
                 n, d->data, d->line, d->file);
         free(d->data);
     }
     vec_free_Vec_Mem(&debug_vec);
     if (i == 0)
-        fprintf(stderr, GRN "No Leaks Found :)\n" RESET);
+        fprintf(stream, GRN "No Leaks Found :)\n" RESET);
     else
-        fprintf(stderr, RED "Found & Patched %d leaks.\n" RESET, i);
+        fprintf(stream, RED "Found & Patched %d leaks.\n" RESET, i);
 }
 
+/* 
+    if these defs are moved above where the 
+    Vec_Mem is defined it will likely override the malloc 
+    and realloc being used in the vec.
+*/
 #if DEBUG_MEM == 1
 /* DEBUG MALLOC */
 #define malloc(size) (debug_malloc(size, __LINE__, __FILE__, #size))
