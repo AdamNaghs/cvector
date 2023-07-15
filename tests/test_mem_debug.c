@@ -11,7 +11,7 @@ void alloc_test(uint8 depth)
 
 }
 
-MEM_DEBUG_INIT;
+MEM_DEBUG_INIT();
 
 int main()
 {

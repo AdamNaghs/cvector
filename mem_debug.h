@@ -21,7 +21,9 @@
     Place before main function.
     Init global variable.
 */
-#define MEM_DEBUG_INIT ;Vec_Mem debug_vec;
+#define MEM_DEBUG_INIT() \
+    ;Vec_Mem debug_vec \
+
 
 /*
     MUST BE PLACE AT ABSOLUTE BEGINNING OF MAIN FUNCTION!
@@ -96,6 +98,7 @@ Comparison debug_data_cmp(const Debug_Data *a, const Debug_Data *b)
 
 void init_leak_finder(void)
 {
+    fprintf(stderr,GRN "Beginning Memory Debug.\n"RESET);
     debug_vec = create_Vec_Mem(debug_data_cmp);
 }
 
@@ -105,7 +108,7 @@ void *debug_malloc(size_t size, uint32 line, char *file, char *resize_statement)
     void *ptr = malloc(size);
 #if PRINT_ALL
     fprintf(stderr,
-             YEL "debug_malloc called on line %d, in file %s. Statement used to resize was (%s) is equal to %d.\n" RESET,
+             BLU "debug_malloc called on line %d, in file %s. Statement used to resize was (%s) is equal to %d.\n" RESET,
             line, file, resize_statement, size);
 #endif
     Name n = {.known = false, .name = "Lengthy_Placeholder"};
@@ -168,7 +171,7 @@ void debug_free(void *ptr, uint32 line, char *file, char *var_name)
     Debug_Data *found = unpack_Debug_Data(ret);
 #if PRINT_ALL
         fprintf(stderr,
-                 "debug_free freeing variable on (line %d, file %s) from (line %d, file %s). Pointer %p was resized %d times.\n" RESET,
+                GRN "debug_free freeing variable on (line %d, file %s) from (line %d, file %s). Pointer %p was resized %d times.\n" RESET,
                 line, file, found->line, found->file, var_name, found->realloc_count);
 #endif
         ASSERT_ON_ERROR(debug_vec.remove(&debug_vec, ret.index), "debug_free error freeing debug_vec, likely freed unallocated memory.");
