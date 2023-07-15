@@ -1,6 +1,6 @@
 # cvector
 
-# DEFINE_VEC_IMPL(type,name)
+# DEFINE_VEC(type,name)
  Creates a Vec type named {name}
  
  In Vec: data is the array, size is always 1 larger than the data in the
@@ -30,8 +30,8 @@ get an error and follow the error tree in stderr.
    	
 
  # Under the hood
- The user should not access the internal variables, and should
- only use the functions attached to the type via func ptr in the init.
+ The user should not access the internal functions (i.e. funcs with internal in the name), and should
+ only use the functions attached to the type via func ptr in the init. Please reframe from reading the data directly or the size or capacity.
  The methods used to define the func ptrs will be slightly mangled so they
  are different each time the macro is called,
  as long as the user doesnt use the same name twice.
@@ -48,13 +48,14 @@ get an error and follow the error tree in stderr.
  
 	 Vec_Int v;
 	 Vec_Int_init(v,compare_ints);
+The naming of the init is purposfully backward to ensure differentiation between create and init.
+
 If you're debugging memory use CREATE_VEC to ensure __LINE__ & __FILE__ macros work for capturing location of initialization.
 
 	Vec_Int v ;
-    CREATE_VEC(&v,compare_ints,int,Vec_Int);
+ 	CREATE_VEC(&v,compare_ints,int,Vec_Int);
 
- The naming of the init is purposfully backward to because it is more of an internal method and slightly mangled.
- But if you want to manually an init errors then use the init.
+ 
   
  # Errors
  The error checking system ive made allows you to use to be able to forget able errors
