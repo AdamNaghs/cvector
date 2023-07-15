@@ -87,27 +87,24 @@ typedef enum
 	by using unpack_##type, ASSERT_ON_ERROR, and RETURN_ON_ERROR
 */
 
-#define ASSERT_ON_ERROR(err, func_name_string)                                                                         \
-	do                                                                                                                 \
-	{                                                                                                                  \
-		if (err != VEC_OK)                                                                                             \
-		{                                                                                                              \
-			fprintf(stderr, "Asserted on Error: in vector in function %s on line %d in file %s Vec_Error Code: %d \n", \
-					func_name_string, __LINE__, __FILE__, err);                                                        \
-			assert(err == VEC_OK);                                                                                     \
-		}                                                                                                              \
+#define ASSERT_ON_ERROR(err, func_name_string)                                                                                                                     \
+	do                                                                                                                                                             \
+	{                                                                                                                                                              \
+		if (err != VEC_OK)                                                                                                                                         \
+		{                                                                                                                                                          \
+			fprintf(stderr, "Asserted on Error: in vector in function %s on line %d in file %s Vec_Error Code: %d \n", func_name_string, __LINE__, __FILE__, err); \
+			assert(err == VEC_OK);                                                                                                                                 \
+		}                                                                                                                                                          \
 	} while (0)
 
-#define RETURN_ON_ERROR(err, func_name_string)                  \
-	do                                                          \
-	{                                                           \
-		if (err != VEC_OK)                                      \
-		{                                                       \
-			fprintf(stderr, "Returned on Error: in vector in function %s on line %d in file %s. \
-			Vec_Error Code: %d \n",                             \
-					func_name_string, __LINE__, __FILE__, err); \
-			return err;                                         \
-		}                                                       \
+#define RETURN_ON_ERROR(err, func_name_string)                                                                                                                      \
+	do                                                                                                                                                              \
+	{                                                                                                                                                               \
+		if (err != VEC_OK)                                                                                                                                          \
+		{                                                                                                                                                           \
+			fprintf(stderr, "Returned on Error: in vector in function %s on line %d in file %s. Vec_Error Code: %d \n", func_name_string, __LINE__, __FILE__, err); \
+			return err;                                                                                                                                             \
+		}                                                                                                                                                           \
 	} while (0)
 
 #define RETURN_IF_NULL(ptr, func_name_string, err)                         \
@@ -152,10 +149,10 @@ typedef enum
                                                                                                            \
 	struct name                                                                                            \
 	{                                                                                                      \
-		type *(data);                                                                                        \
-		size_t (size);                                                                                       \
-		size_t (capacity);                                                                                   \
-		Vec_Compare_Func_##type (compare_vals);                                                              \
+		type *(data);                                                                                      \
+		size_t(size);                                                                                      \
+		size_t(capacity);                                                                                  \
+		Vec_Compare_Func_##type(compare_vals);                                                             \
 		bool (*empty)(name *);                                                                             \
 		size_t (*read_size)(name *);                                                                       \
 		size_t (*read_capacity)(name *);                                                                   \

@@ -6,7 +6,6 @@
 
 /* simple single threaded memory debugger */
 
-
 /* set to 1 to enable memory replacement macros */
 #define DEBUG_MEM 1
 
@@ -18,19 +17,19 @@
    You can ignore the rest of the file unless you are interest in implementation
 */
 
-/* 
+/*
     Place before main function.
-    Init global variable. 
+    Init global variable.
 */
 #define MEM_DEBUG_INIT Vec_Mem debug_vec
 
-/* 
+/*
     MUST BE PLACE AT ABSOLUTE BEGINNING OF MAIN FUNCTION!
     Start saving memory being allocated.
 */
 #define MEM_DEBUG_START() init_leak_finder()
 
-/* 
+/*
     MUST BE PLACED AT ABSOLUTE END OF MAIN FUNCTION!
     (Immediatley before returning)
     End mem debugging and print all unfreed pointers.
@@ -60,25 +59,23 @@ DEFINE_VEC(Debug_Data, Vec_Mem);
 /* define external variable (initialized with MEM_DEBUG_INIT) */
 extern Vec_Mem debug_vec;
 
-
 #define PICK_COLOR (i % 2 == 0 ? CYN : MAG)
 
-void debug_inspect_memory(FILE* stream)
+void debug_inspect_memory(FILE *stream)
 {
     size_t i;
     size_t size = debug_vec.read_size(&debug_vec);
     assert(size != SIZE_MAX);
-    fprintf(stream,"%sBeginning Memory Inspection.\n",MAG);
+    fprintf(stream, "%sBeginning Memory Inspection.\n", MAG);
     for (i = 0; i < size; i++)
-    {   
-        char* color = PICK_COLOR;
-        Debug_Data* d = unpack_Debug_Data(debug_vec.at(&debug_vec,i));
-        fprintf(stream,"%sPointer %p allocated in file: %s, on line: %d, has been realloced %d times.\n"RESET,
-            color,d->data,d->file,d->line,d->realloc_count);
+    {
+        char *color = PICK_COLOR;
+        Debug_Data *d = unpack_Debug_Data(debug_vec.at(&debug_vec, i));
+        fprintf(stream, "%sPointer %p allocated in file: %s, on line: %d, has been realloced %d times.\n" RESET,
+                color, d->data, d->file, d->line, d->realloc_count);
     }
-    fprintf(stream,"%sEnd of Memory Inspection.\n"RESET,PICK_COLOR);
+    fprintf(stream, "%sEnd of Memory Inspection.\n" RESET, PICK_COLOR);
 }
-
 
 Comparison debug_data_cmp(const Debug_Data *a, const Debug_Data *b)
 {
@@ -152,12 +149,15 @@ void debug_free(void *ptr, uint32 line, char *file, char *var_name)
                 RED "debug_free attempting to free non-dynamic/stack memory on (line %d, file %s). Variable named (%s)\n" RESET,
                 line, file, var_name);
     }
+    RETURN_ON_ERROR(ret.err,"debug_free likely attempted to free non-dynamic/stack memory, check last error to trace stack memory");
     Debug_Data *found = unpack_Debug_Data(ret);
     if (PRINT_ALL)
+    {
         fprintf(stderr,
                 GRN "debug_free freeing variable on (line %d, file %s) from (line %d, file %s). Pointer %p was resized %d times.\n" RESET,
                 line, file, found->line, found->file, var_name, found->realloc_count);
-    ASSERT_ON_ERROR(debug_vec.remove(&debug_vec, ret.index), "error freeing debug_vec, likely freed unallocated memory.");
+    }
+    ASSERT_ON_ERROR(debug_vec.remove(&debug_vec, ret.index), "debug_free error freeing debug_vec, likely freed unallocated memory.");
     free(ptr);
 }
 

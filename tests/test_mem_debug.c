@@ -28,7 +28,7 @@ int main()
     int *i = malloc(sizeof(int));
     int k;
     int *j = &k;
-    //free(i);
+    free(i);
     (vec->free)(vec);
     //free(j);
 
