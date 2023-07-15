@@ -3,6 +3,7 @@
 
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #define RED "\x1B[31m"
 #define GRN "\x1B[32m"
@@ -28,7 +29,17 @@
     }                                                                \
   } while (0)
 
-#define FPRINTF_ASSERT(stream, cond, fstring, ...)                                          \
+#define COLORED_ASSERT(cond)                                         \
+  do                                                                 \
+  {                                                                  \
+    if (!(cond))                                                     \
+    {                                                                \
+      fprintf(stderr, RED "Assertion failed:  '%s'\n" RESET, #cond); \
+      assert(cond);                                                  \
+    }                                                                \
+  } while (0);
+
+#define FPRINTF_ASSERT(stream, cond, fstring, ...)                                       \
   do                                                                                     \
   {                                                                                      \
     if (!(cond))                                                                         \
@@ -42,5 +53,6 @@
       assert(cond);                                                                      \
     }                                                                                    \
   } while (0)
+
 
 #endif /* COLORED_ASSERT_H */
