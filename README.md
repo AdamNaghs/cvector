@@ -48,13 +48,14 @@ get an error and follow the error tree in stderr.
  
 	 Vec_Int v;
 	 Vec_Int_init(v,compare_ints);
+The naming of the init is purposfully backward to ensure differentiation between create and init.
+
 If you're debugging memory use CREATE_VEC to ensure __LINE__ & __FILE__ macros work for capturing location of initialization.
 
 	Vec_Int v ;
-    CREATE_VEC(&v,compare_ints,int,Vec_Int);
+ 	CREATE_VEC(&v,compare_ints,int,Vec_Int);
 
- The naming of the init is purposfully backward to because it is more of an internal method and slightly mangled.
- But if you want to manually an init errors then use the init.
+ 
   
  # Errors
  The error checking system ive made allows you to use to be able to forget able errors
