@@ -1,7 +1,7 @@
 #include "../mem_debug.h"
 
 
-DEFINE_VEC(int, Vec_Int);
+DEFINE_VEC(int, Vec_Int,compare_ints);
 
 void alloc_test(uint8 depth)
 {
@@ -11,11 +11,9 @@ void alloc_test(uint8 depth)
 
 }
 
-//MEM_DEBUG_INIT();
 
 int main()
 {
-    //MEM_DEBUG_START();
 
     Vec_Int v;
     CREATE_VEC(&v, compare_ints, int, Vec_Int);
