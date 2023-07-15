@@ -138,7 +138,7 @@ typedef enum
 		ASSERT_ON_ERROR(unpack.err, "unpack_" #type);                  \
 		return unpack.data;                                            \
 	}                                                                  \
-	Return_##type pack_##type(type *data, size_t index, Vec_Error err) \
+	Return_##type internal_pack_##type(type *data, size_t index, Vec_Error err) \
 	{                                                                  \
 		Return_##type d = {data, index, err};                          \
 		return d;                                                      \
@@ -185,7 +185,7 @@ typedef enum
 		return VEC_OK;                                                                                \
 	}                                                                                                 \
 	/*internal method used to determine if we need to resize and do it if we do*/                     \
-	Vec_Error vec_try_resize_##name(name *v)                                                          \
+	Vec_Error interal_try_resize_##name(name *v)                                                          \
 	{                                                                                                 \
 		RETURN_IF_NULL(v, "try_resize", VEC_GIVEN_NULL_ERROR);                                        \
 		if (v->size == v->capacity)                                                                   \
@@ -204,7 +204,7 @@ typedef enum
 		return VEC_OK;                                                                                \
 	}                                                                                                 \
 	/* internal method to check if index is oob */                                                    \
-	Vec_Error vec_oob_check_##name(name *v, size_t index)                                             \
+	Vec_Error internal_oob_check_##name(name *v, size_t index)                                             \
 	{                                                                                                 \
 		if (index > v->size)                                                                          \
 		{                                                                                             \
@@ -216,9 +216,9 @@ typedef enum
 	Vec_Error vec_swap##name(name *v, size_t index0, size_t index1)                                   \
 	{                                                                                                 \
 		RETURN_IF_NULL(v, "swap", VEC_GIVEN_NULL_ERROR);                                              \
-		Vec_Error oob0 = vec_oob_check_##name(v, index0);                                             \
+		Vec_Error oob0 = internal_oob_check_##name(v, index0);                                             \
 		RETURN_ON_ERROR(oob0, "swap_" #type " (index0)");                                             \
-		Vec_Error oob1 = vec_oob_check_##name(v, index1);                                             \
+		Vec_Error oob1 = internal_oob_check_##name(v, index1);                                             \
 		RETURN_ON_ERROR(oob1, "swap_" #type " (index1)");                                             \
 		type tmp = v->data[index0];                                                                   \
 		v->data[index0] = v->data[index1];                                                            \
@@ -273,7 +273,7 @@ typedef enum
 	Vec_Error vec_push_back_##name(name *v, type value)                                               \
 	{                                                                                                 \
 		RETURN_IF_NULL(v, "push_back_" #name, VEC_GIVEN_NULL_ERROR);                                  \
-		Vec_Error err = vec_try_resize_##name(v);                                                     \
+		Vec_Error err = interal_try_resize_##name(v);                                                     \
 		RETURN_ON_ERROR(err, "push_back_" #type "_resize_" #name);                                    \
 		v->data[v->size++] = value;                                                                   \
 		return VEC_OK;                                                                                \
@@ -282,8 +282,8 @@ typedef enum
 	Vec_Error vec_insert_##name(name *v, size_t index, type value)                                    \
 	{                                                                                                 \
 		RETURN_IF_NULL(v, "insert_" #name, VEC_GIVEN_NULL_ERROR);                                     \
-		RETURN_ON_ERROR(vec_oob_check_##name(v, index), "insert (oob check index)");                  \
-		Vec_Error err = vec_try_resize_##name(v);                                                     \
+		RETURN_ON_ERROR(internal_oob_check_##name(v, index), "insert (oob check index)");                  \
+		Vec_Error err = interal_try_resize_##name(v);                                                     \
 		RETURN_ON_ERROR(err, "insert_" #type " (interal_try_resize)_" #name);                         \
 		for (size_t i = v->size; i > index; i--)                                                      \
 		{                                                                                             \
@@ -297,13 +297,13 @@ typedef enum
 	Vec_Error vec_remove_##name(name *v, size_t index)                                                \
 	{                                                                                                 \
 		RETURN_IF_NULL(v, "remove_" #type, VEC_GIVEN_NULL_ERROR);                                     \
-		RETURN_ON_ERROR(vec_oob_check_##name(v, index), "remove_" #type " (oob check index)_" #name); \
+		RETURN_ON_ERROR(internal_oob_check_##name(v, index), "remove_" #type " (oob check index)_" #name); \
 		for (size_t i = index; i < (v->size - 1); i++)                                                \
 		{                                                                                             \
 			v->data[i] = v->data[i + 1];                                                              \
 		}                                                                                             \
 		v->size--;                                                                                    \
-		Vec_Error err = vec_try_resize_##name(v);                                                     \
+		Vec_Error err = interal_try_resize_##name(v);                                                     \
 		RETURN_ON_ERROR(err, "remove_" #type "(internal_try_resize)_" #name);                         \
 		return VEC_OK;                                                                                \
 	}                                                                                                 \
@@ -311,25 +311,25 @@ typedef enum
 	Return_##type vec_find_##name(name *v, type value)                                                \
 	{                                                                                                 \
 		RETURN_IF_NULL(v, "find_" #name,                                                              \
-					   (pack_##type(NULL, -1, VEC_GIVEN_NULL_ERROR)));                                \
+					   (internal_pack_##type(NULL, -1, VEC_GIVEN_NULL_ERROR)));                                \
 		int i;                                                                                        \
 		for (i = 0; i < v->size; i++)                                                                 \
 		{                                                                                             \
 			if (v->compare_vals(&(v->data[i]), &value) == EQUAL)                                      \
-				return pack_##type(&v->data[i], (size_t)i, VEC_OK);                                   \
+				return internal_pack_##type(&v->data[i], (size_t)i, VEC_OK);                                   \
 		}                                                                                             \
-		return pack_##type(NULL, -1, VEC_CANT_FIND_ERROR);                                            \
+		return internal_pack_##type(NULL, -1, VEC_CANT_FIND_ERROR);                                            \
 	}                                                                                                 \
                                                                                                       \
 	Return_##type vec_at_##name(name *v, size_t index)                                                \
 	{                                                                                                 \
 		RETURN_IF_NULL(v, "at_" #name,                                                                \
-					   (pack_##type(NULL, -1, VEC_GIVEN_NULL_ERROR)));                                \
-		Vec_Error err = vec_oob_check_##name(v, index);                                               \
+					   (internal_pack_##type(NULL, -1, VEC_GIVEN_NULL_ERROR)));                                \
+		Vec_Error err = internal_oob_check_##name(v, index);                                               \
                                                                                                       \
 		if (err != VEC_OK)                                                                            \
-			return pack_##type(NULL, -1, err);                                                        \
-		return pack_##type(&v->data[index], index, VEC_OK);                                           \
+			return internal_pack_##type(NULL, -1, err);                                                        \
+		return internal_pack_##type(&v->data[index], index, VEC_OK);                                           \
 	}                                                                                                 \
                                                                                                       \
 	Vec_Error name##_init(name *v, Vec_Compare_Func_##type compare_values)                            \
