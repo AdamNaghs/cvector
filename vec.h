@@ -87,16 +87,15 @@ typedef enum
 	by using unpack_##type, ASSERT_ON_ERROR, and RETURN_ON_ERROR
 */
 
-#define ASSERT_ON_ERROR(err, func_name_string)                  \
-	do                                                          \
-	{                                                           \
-		if (err != VEC_OK)                                      \
-		{                                                       \
-			fprintf(stderr, "Error: in vector in function %s on line %d\
-				in file %s Vec_Error Code: %d \n",              \
-					func_name_string, __LINE__, __FILE__, err); \
-			assert(err == VEC_OK);                              \
-		}                                                       \
+#define ASSERT_ON_ERROR(err, func_name_string)                                                             \
+	do                                                                                                     \
+	{                                                                                                      \
+		if (err != VEC_OK)                                                                                 \
+		{                                                                                                  \
+			fprintf(stderr, "Error: in vector in function %s on line %d in file %s Vec_Error Code: %d \n", \
+					func_name_string, __LINE__, __FILE__, err);                                            \
+			assert(err == VEC_OK);                                                                         \
+		}                                                                                                  \
 	} while (0)
 
 #define RETURN_ON_ERROR(err, func_name_string)                  \
@@ -172,15 +171,15 @@ typedef enum
 		Return_##type (*at)(name *, size_t index);                                                         \
 	};                                                                                                     \
                                                                                                            \
-	Vec_Error vec_realloc_##name(name *v, size_t capacity)                                                 \
+	Vec_Error vec_realloc_##name(name *v, size_t name##_capacity)                                                 \
 	{                                                                                                      \
 		RETURN_IF_NULL(v, "realloc_" #type, VEC_GIVEN_NULL_ERROR);                                         \
-		if (capacity <= 0)                                                                                 \
-			capacity = 1;                                                                                  \
-		type *new_data = (type *)realloc(v->data, capacity * sizeof(type));                                \
+		if (name##_capacity <= 0)                                                                                 \
+			name##_capacity = 1;                                                                                  \
+		type *new_data = (type *)realloc(v->data, name##_capacity * sizeof(type));                                \
 		RETURN_IF_NULL(new_data, "realloc_" #type, VEC_ALLOC_ERROR);                                       \
 		v->data = new_data;                                                                                \
-		v->capacity = capacity;                                                                            \
+		v->capacity = name##_capacity;                                                                            \
 		return VEC_OK;                                                                                     \
 	}                                                                                                      \
 	/*internal method used to determine if we need to resize and do it if we do*/                          \
@@ -367,5 +366,27 @@ typedef enum
 		assert(init_err == VEC_OK);                                                                        \
 		return init_vec;                                                                                   \
 	}
+
+#define CREATE_VEC(v, compare_values, type, name)                                        \
+	do                                                                   \
+	{                                                                    \
+		(v)->data = (type *)malloc(VEC_INITIAL_CAPACITY * sizeof(type)); \
+		(v)->size = 0;                                                   \
+		(v)->capacity = VEC_INITIAL_CAPACITY;                            \
+		(v)->compare_vals = compare_values;                              \
+		(v)->clear = vec_clear_##name;                                   \
+		(v)->free = vec_free_##name;                                     \
+		(v)->read_size = vec_size_##name;                                \
+		(v)->read_capacity = vec_capacity_##name;                        \
+		(v)->empty = vec_empty_##name;                                   \
+		(v)->compact = vec_compact_##name;                               \
+		(v)->realloc = vec_realloc_##name;                               \
+		(v)->push_back = vec_push_back_##name;                           \
+		(v)->remove = vec_remove_##name;                                 \
+		(v)->swap = vec_swap##name;                                      \
+		(v)->find = vec_find_##name;                                     \
+		(v)->at = vec_at_##name;                                         \
+		(v)->insert = vec_insert_##name;                                 \
+	} while (0)
 
 #endif /*VEC_H*/

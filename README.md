@@ -48,6 +48,10 @@ get an error and follow the error tree in stderr.
  
 	 Vec_Int v;
 	 Vec_Int_init(v,compare_ints);
+If you're debugging memory use CREATE_VEC to ensure __LINE__ & __FILE__ macros work for capturing location of initialization.
+
+	Vec_Int v ;
+    CREATE_VEC(&v,compare_ints,int,Vec_Int);
 
  The naming of the init is purposfully backward to because it is more of an internal method and slightly mangled.
  But if you want to manually an init errors then use the init.
@@ -97,3 +101,5 @@ You can use the comparison func to ensure you can use sorting algos on the struc
  6. When reading the code, if you find a function with a comment indicating it is internal, do not call it
  7. you can forget about most of the error handling and worry about it when it comes up
 	by using unpack_##type, ASSERT_ON_ERROR, and RETURN_ON_ERROR
+ 8. if youre using the memory debugger and a vec, change you init method to the CREATE_VEC macro,
+	this macro takes many args but ensures the __LINE__ & __FILE__ macros work as expected.

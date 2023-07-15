@@ -6,6 +6,11 @@
 
 /* simple single threaded memory debugger */
 
+/* whatever file this is included in need to
+    have a Vec_Mem debug_vec;
+    and init that vec by calling init_leak_finder();
+*/
+
 /* set to 1 to enable */
 #define DEBUG_MEM 1
 
@@ -56,8 +61,8 @@ void *debug_malloc(size_t size, uint32 line, char *file, char *resize_statement)
     void *ptr = malloc(size);
     if (PRINT_ALL)
         fprintf(stderr,
-                "debug_malloc called of size %d, on line %d, in file %s. Statement used to resize was %s\n",
-                size, line, file, resize_statement);
+                GRN"debug_malloc called on line %d, in file %s. Statement used to resize was (%s) is equal to %d.\n"RESET,
+                line, file, resize_statement,size);
     Debug_Data d = {ptr, file, line, 0};
     debug_vec.push_back(&debug_vec, d);
     return ptr;
@@ -75,11 +80,10 @@ void *debug_realloc(void *ptr, size_t size, uint32 line, char *file, char *resiz
     Debug_Data in = {ptr};
     Debug_Data *d = unpack_Debug_Data(debug_vec.find(&debug_vec, in));
     if (PRINT_ALL)
-    {
         fprintf(stderr,
-                "debug_realloc called of size %d, on line %d, in file %s. Statement used to resize was %s. Pointer has been resized %d times\n ",
-                size, line, file, resize_statement, d->realloc_count);
-    }
+                GRN"debug_realloc called  on line %d, in file %s. Statement used to resize was (%s) is equal to %d. Pointer has been resized %d times.\n"RESET,
+                 line, file, resize_statement,size, d->realloc_count+1);
+
     d->data = new_ptr;
     d->realloc_count++;
     return new_ptr;
@@ -91,10 +95,10 @@ void *debug_calloc(size_t num, size_t size, uint32 line, char *file, char *resiz
 {
     void *ptr = calloc(num, size);
     if (PRINT_ALL)
-        [fprintf(stderr,
-                 "debug_calloc called of size %d, on line %d, in file %s. Statement used to resize was %s\n",
-                 size, line, file, resize_statement);
-        ] Debug_Data d = {ptr, __FILE__, __LINE__, 0};
+        fprintf(stderr,
+                GRN"debug_calloc called on line %d, in file %s. Statement used to resize was (%s) is equal to %d.\n"RESET,
+                 line, file, resize_statement,size);
+    Debug_Data d = {ptr, __FILE__, __LINE__, 0};
     debug_vec.push_back(&debug_vec, d);
     return ptr;
 }
@@ -105,12 +109,17 @@ void debug_free(void *ptr, uint32 line, char *file, char *var_name)
 {
     Debug_Data find = {ptr};
     Return_Debug_Data ret = debug_vec.find(&debug_vec, find);
+    if (ret.err == VEC_CANT_FIND_ERROR) {
+        fprintf(stderr,
+            RED"debug_free attempting to free non-dynamic/stack memory on (line %d, file %s). Variable named (%s)\n"RESET,
+            line, file, var_name);
+    }
     Debug_Data *found = unpack_Debug_Data(ret);
     if (PRINT_ALL)
-        fprintf(stderr, ptr != NULL,
-                "debug_free freeing variable on (line %d, file %s) from (line %d, file %s). Pointer name was %s,\n",
+        fprintf(stderr,
+                GRN"debug_free freeing variable on (line %d, file %s) from (line %d, file %s). Pointer name was %p.\n"RESET,
                 line, file, found->line, found->file, var_name);
-    ASSERT_ON_ERROR(debug_vec.remove(&debug_vec, ret.index), "error freeing debug_vec");
+    //ASSERT_ON_ERROR(debug_vec.remove(&debug_vec, ret.index), "error freeing debug_vec, likely freed unallocated memory.");
     free(ptr);
 }
 
@@ -124,9 +133,10 @@ void find_leaks(void)
     for (i = 0; i < debug_vec.size; i++)
     {
         Debug_Data *d = unpack_Debug_Data(debug_vec.at(&debug_vec, i));
-        fprintf(stderr, RED "Pointer at address %p not freed. Initialized on line %d in file %s\n" RESET,
+        fprintf(stderr, RED "Pointer at address %p not freed. Initialized on line %d in file %s.\n" RESET,
                 d->data, d->line, d->file);
     }
+    debug_vec.free(&debug_vec);
 }
 
 #if DEBUG_MEM == 1
