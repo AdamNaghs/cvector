@@ -9,6 +9,7 @@ int main()
 
     int* i = malloc(sizeof(int));
 
+    //free(i);
     find_leaks();
     return 0;
 
