@@ -67,7 +67,7 @@ Otherwise you'll be told your Vec was allocated wherever you defined it with DEF
  Also, whenever a function encounters an error it will run RETURN_ON_ERROR most of the time and give a detailed error to stderr
  and the program can continue to run. 
  You can either manually handle these errors or unpack Return_types and ASSERT_ON_ERROR.
- By unpacking and asserting on error
+ By unpacking which will assert on error
 
   # Vec_Error Codes
 	  typedef enum
