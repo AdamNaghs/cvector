@@ -66,8 +66,10 @@ Otherwise you'll be told your Vec was allocated wherever you defined it with DEF
  As well as the ASSERT_ON_ERROR and RETURN_ON_ERROR macros which will give some detailed error information. An error do these macros is a Vec_Error
  Also, whenever a function encounters an error it will run RETURN_ON_ERROR most of the time and give a detailed error to stderr
  and the program can continue to run. 
+ 
  You can either manually handle these errors or unpack Return_types and ASSERT_ON_ERROR.
- By unpacking which will assert on error
+ By unpacking which will assert on error.
+ 
  Functions that return a size return SIZE_MAX on error.
 
   # Vec_Error Codes
