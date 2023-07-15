@@ -26,8 +26,8 @@ int main()
 
     //free(k);
     free(i);
-    MEM_DEBUG_END();
     (vec->free)(vec);
+    MEM_DEBUG_END();
 
     return 0;
 
