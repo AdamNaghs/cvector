@@ -171,15 +171,15 @@ typedef enum
 		Return_##type (*at)(name *, size_t index);                                                         \
 	};                                                                                                     \
                                                                                                            \
-	Vec_Error vec_realloc_##name(name *v, size_t name##_capacity)                                                 \
+	Vec_Error vec_realloc_##name(name * name##_v, size_t name##_capacity)                                                 \
 	{                                                                                                      \
-		RETURN_IF_NULL(v, "realloc_" #type, VEC_GIVEN_NULL_ERROR);                                         \
+		RETURN_IF_NULL(name##_v, "realloc_" #type, VEC_GIVEN_NULL_ERROR);                                         \
 		if (name##_capacity <= 0)                                                                                 \
 			name##_capacity = 1;                                                                                  \
-		type *new_data = (type *)realloc(v->data, name##_capacity * sizeof(type));                                \
+		type *new_data = (type *)realloc(name##_v->data, name##_capacity * sizeof(type));                                \
 		RETURN_IF_NULL(new_data, "realloc_" #type, VEC_ALLOC_ERROR);                                       \
-		v->data = new_data;                                                                                \
-		v->capacity = name##_capacity;                                                                            \
+		name##_v->data = new_data;                                                                                \
+		name##_v->capacity = name##_capacity;                                                                            \
 		return VEC_OK;                                                                                     \
 	}                                                                                                      \
 	/*internal method used to determine if we need to resize and do it if we do*/                          \
@@ -190,13 +190,13 @@ typedef enum
 		{                                                                                                  \
 			v->capacity = v->capacity == 0 ? 1 : v->capacity * 2;                                          \
 			Vec_Error err = vec_realloc_##name(v, v->capacity);                                            \
-			RETURN_ON_ERROR(err, "internal_try_resize_" #type " (double)");                                \
+			RETURN_ON_ERROR(err, "internal_try_resize_" #name " (double)");                                \
 			return VEC_OK;                                                                                 \
 		}                                                                                                  \
 		if (v->size < v->capacity / 4)                                                                     \
 		{                                                                                                  \
 			Vec_Error err = vec_realloc_##name(v, v->capacity / 2);                                        \
-			RETURN_ON_ERROR(err, "internal_try_resize_" #type " (shrink)");                                \
+			RETURN_ON_ERROR(err, "internal_try_resize_" #name " (shrink)");                                \
 			return VEC_OK;                                                                                 \
 		}                                                                                                  \
 		return VEC_OK;                                                                                     \

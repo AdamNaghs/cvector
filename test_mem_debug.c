@@ -1,18 +1,21 @@
 #include "mem_debug.h"
 
-Vec_Mem debug_vec;
+
 
 
 DEFINE_VEC(int,Vec_Int);
 
+MEM_DEBUG_INIT;
+
 int main()
-{
-    init_leak_finder();
+{   
+    MEM_DEBUG_START;
 
-    Vec_Int v ;//= create_Vec_Int(compare_ints);
+    Vec_Int v ;
     CREATE_VEC(&v,compare_ints,int,Vec_Int);
+    Vec_Int *vec = &v;
 
-    v.push_back(&v,1);
+    vec->push_back(&v,1);
 
     
 
@@ -21,8 +24,9 @@ int main()
 
 
     //free(k);
-    find_leaks();
-    //free(i);
+    free(i);
+    (vec->free)(vec);
+    MEM_DEBUG_END;
 
     return 0;
 
