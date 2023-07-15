@@ -6,38 +6,46 @@
 
 /* simple single threaded memory debugger */
 
-/* can only be used inside of functions
-    works best in main loop.
-*/
-
-/* whatever file this is included in need to
-    have a Vec_Mem debug_vec;
-    and init that vec by calling init_leak_finder();
-*/
 
 /* set to 1 to enable memory replacement macros */
 #define DEBUG_MEM 1
 
 /* set to 1 to enable printing when there are no errors */
-#define PRINT_ALL 1
+#define PRINT_ALL 0
 
 /*
-   Use these three macros to run the memory debugger
-   You can ignore the rest of the file
+   Use these four macros to run the memory debugger
+   You can ignore the rest of the file unless you are interest in implementation
 */
 
-/* init global variable */
+/* 
+    Place before main function.
+    Init global variable. 
+*/
 #define MEM_DEBUG_INIT Vec_Mem debug_vec
 
-/* start in mem debugging */
+/* 
+    MUST BE PLACE AT ABSOLUTE BEGINNING OF MAIN FUNCTION!
+    Start saving memory being allocated.
+*/
 #define MEM_DEBUG_START() init_leak_finder()
 
-/* end mem debugging and print all unfreed pointers */
+/* 
+    MUST BE PLACED AT ABSOLUTE END OF MAIN FUNCTION!
+    (Immediatley before returning)
+    End mem debugging and print all unfreed pointers.
+    Will also free all unfreed memory.
+*/
 #define MEM_DEBUG_END() find_leaks()
+
+/*
+    Print info of all pointers currently allocated
+*/
+#define MEM_DEBUG_INSPECT(stream) debug_inspect_memory(stream)
 
 /* Implementation below */
 
-/* every time we allocate memory we save Debug data to a Vec */
+/* every time we allocate memory we save a Debug_Data to a Vec */
 typedef struct
 {
     void *data;
@@ -51,6 +59,26 @@ DEFINE_VEC(Debug_Data, Vec_Mem);
 
 /* define external variable (initialized with MEM_DEBUG_INIT) */
 extern Vec_Mem debug_vec;
+
+
+#define PICK_COLOR (i % 2 == 0 ? CYN : MAG)
+
+void debug_inspect_memory(FILE* stream)
+{
+    size_t i;
+    size_t size = debug_vec.read_size(&debug_vec);
+    assert(size != SIZE_MAX);
+    fprintf(stream,"%sBeginning Memory Inspection.\n",MAG);
+    for (i = 0; i < size; i++)
+    {   
+        char* color = PICK_COLOR;
+        Debug_Data* d = unpack_Debug_Data(debug_vec.at(&debug_vec,i));
+        fprintf(stream,"%sPointer %p allocated in file: %s, on line: %d, has been realloced %d times.\n"RESET,
+            color,d->data,d->file,d->line,d->realloc_count);
+    }
+    fprintf(stream,"%sEnd of Memory Inspection.\n"RESET,PICK_COLOR);
+}
+
 
 Comparison debug_data_cmp(const Debug_Data *a, const Debug_Data *b)
 {
@@ -142,6 +170,7 @@ void find_leaks(void)
         Debug_Data *d = unpack_Debug_Data(debug_vec.at(&debug_vec, i));
         fprintf(stderr, RED "Pointer at address %p not freed. Initialized on line %d in file %s.\n" RESET,
                 d->data, d->line, d->file);
+        free(d->data);
     }
     debug_vec.free(&debug_vec);
 }

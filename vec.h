@@ -152,10 +152,10 @@ typedef enum
                                                                                                            \
 	struct name                                                                                            \
 	{                                                                                                      \
-		type *data;                                                                                        \
-		size_t size;                                                                                       \
-		size_t capacity;                                                                                   \
-		Vec_Compare_Func_##type compare_vals;                                                              \
+		type *(data);                                                                                        \
+		size_t (size);                                                                                       \
+		size_t (capacity);                                                                                   \
+		Vec_Compare_Func_##type (compare_vals);                                                              \
 		bool (*empty)(name *);                                                                             \
 		size_t (*read_size)(name *);                                                                       \
 		size_t (*read_capacity)(name *);                                                                   \
