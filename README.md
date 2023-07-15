@@ -43,14 +43,16 @@ get an error and follow the error tree in stderr.
  You can call create_name to safely make a vector if you want to set it equal to a vector.
  ex: 
  
-	 Vec_Int v = create_Vec_Int(compare_ints);
+	 Vec_Int v = create_Vec_Int();
  as opposed to
  
 	 Vec_Int v;
-	 Vec_Int_init(v,compare_ints);
+	 Vec_Int_init(v);
 The naming of the init is purposfully backward to ensure differentiation between create and init.
 
-If you're debugging memory use CREATE_VEC to ensure __LINE__ & __FILE__ macros work for capturing location of initialization.
+If you're debugging memory use CREATE_VEC to ensure __LINE__ & __FILE__ 
+macros work for capturing location of initialization.
+Otherwise you'll be told your Vec was allocated wherever you defined it with DEFINE_VEC.
 
 	Vec_Int v ;
  	CREATE_VEC(&v,compare_ints,int,Vec_Int);
@@ -92,8 +94,22 @@ Any other types need their own compare method to be written and passed as an arg
 The only method which uses the comparison func is find and it only uses the EQUAL.
 You can use the comparison func to ensure you can use sorting algos on the struct.
 
+# Functions
+This struct simulates a class using function pointers but you still need to pass self back into the function.
+You can forego this fascade and just call the mangled functions that are defined by DEFINE_VEC
 
-# Behavior of Note: (all for functions called through func ptr except create/init)
+	DEFINE_VEC(int,Vec_Int,compare_ints);
+	Vec_Int v = create_Vec_Int();
+	
+	Return_int x = vec_at_Vec_Int(v,1);
+	int* x_val = unpack_int(x); 
+As opposed to
+
+	Return_int x = v.at(&v,1);
+	int* x_val = unpack_int(x); 
+
+
+# Behavior of Note: 
  1. Freeing will leave the vec usable still as long as you call it though functions.
  2. Use free to empty the vector and set the size and capacity to 0.
  3. If you realloc/compact while the vec size is 0 the capacity will become 1.
@@ -104,3 +120,5 @@ You can use the comparison func to ensure you can use sorting algos on the struc
 	by using unpack_##type, ASSERT_ON_ERROR, and RETURN_ON_ERROR
  8. if youre using the memory debugger and a vec, change you init method to the CREATE_VEC macro,
 	this macro takes many args but ensures the __LINE__ & __FILE__ macros work as expected.
+ 9. if you prefer not to use the object oriented way of using this struct you can call the function it defines
+	and links as function ptrs. However the object oriented method provides the ability to easily change the type of your Vec

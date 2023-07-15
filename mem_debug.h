@@ -192,11 +192,7 @@ void *find_leaks(FILE* stream)
         fprintf(stream, RED "Found & Patched %d leaks.\n" RESET, i);
 }
 
-/* 
-    if these defs are moved above where the 
-    Vec_Mem is defined it will likely override the malloc 
-    and realloc being used in the vec.
-*/
+
 #if DEBUG_MEM == 1
 /* DEBUG MALLOC */
 #define malloc(size) (debug_malloc(size, __LINE__, __FILE__, #size))
