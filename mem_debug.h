@@ -48,8 +48,6 @@ typedef struct
     Name alias;
 } Debug_Data;
 
-
-
 Comparison debug_data_cmp(const Debug_Data *a, const Debug_Data *b)
 {
     if ((a->data == b->data) ||
@@ -64,15 +62,12 @@ Comparison debug_data_cmp(const Debug_Data *a, const Debug_Data *b)
 DEFINE_VEC(Debug_Data, Vec_Mem, debug_data_cmp);
 /* define external variable (initialized with MEM_DEBUG_INIT) */
 
-static Vec_Mem debug_vec = 
-{
-    .data = 0,
-    .size = 0,
-    .capacity = 0,
-} ;
-
-
-
+static Vec_Mem debug_vec =
+    {
+        .data = 0,
+        .size = 0,
+        .capacity = 0,
+};
 
 #define PICK_COLOR (i % 2 == 0 ? CYN : MAG)
 
