@@ -10,7 +10,7 @@
 #define DEBUG_MEM 1
 
 /* set to 1 to enable printing when there are no errors */
-#define PRINT_ALL 0
+#define PRINT_ALL 1
 
 /*
    Use these four macros to run the memory debugger
@@ -21,13 +21,13 @@
     Place before main function.
     Init global variable.
 */
-#define MEM_DEBUG_INIT Vec_Mem debug_vec
+#define MEM_DEBUG_INIT ;Vec_Mem debug_vec;
 
 /*
     MUST BE PLACE AT ABSOLUTE BEGINNING OF MAIN FUNCTION!
     Start saving memory being allocated.
 */
-#define MEM_DEBUG_START() init_leak_finder()
+#define MEM_DEBUG_START() (init_leak_finder())
 
 /*
     MUST BE PLACED AT ABSOLUTE END OF MAIN FUNCTION!
@@ -35,21 +35,20 @@
     End mem debugging and print all unfreed pointers.
     Will also free all unfreed memory.
 */
-#define MEM_DEBUG_END() find_leaks()
+#define MEM_DEBUG_END() (find_leaks())
 
 /*
     Print info of all pointers currently allocated
 */
-#define MEM_DEBUG_INSPECT(stream) debug_inspect_memory(stream)
+#define MEM_DEBUG_INSPECT(stream) (debug_inspect_memory(stream))
 
 /* Implementation below */
 
-typedef struct 
+typedef struct
 {
     bool known;
-    char* name;
+    char *name;
 } Name;
-
 
 /* every time we allocate memory we save a Debug_Data to a Vec */
 typedef struct
@@ -104,10 +103,11 @@ void init_leak_finder(void)
 void *debug_malloc(size_t size, uint32 line, char *file, char *resize_statement)
 {
     void *ptr = malloc(size);
-    if (PRINT_ALL)
-        fprintf(stderr,
-                GRN "debug_malloc called on line %d, in file %s. Statement used to resize was (%s) is equal to %d.\n" RESET,
-                line, file, resize_statement, size);
+#if PRINT_ALL
+    fprintf(stderr,
+             YEL "debug_malloc called on line %d, in file %s. Statement used to resize was (%s) is equal to %d.\n" RESET,
+            line, file, resize_statement, size);
+#endif
     Name n = {.known = false, .name = "Lengthy_Placeholder"};
     Debug_Data d = {.data = ptr, .file = file, .line = line, .realloc_count = 0, .alias = n};
     debug_vec.push_back(&debug_vec, d);
@@ -125,10 +125,11 @@ void *debug_realloc(void *ptr, size_t size, uint32 line, char *file, char *resiz
     void *new_ptr = realloc(ptr, size);
     Debug_Data in = {ptr};
     Debug_Data *d = unpack_Debug_Data(debug_vec.find(&debug_vec, in));
-    if (PRINT_ALL)
-        fprintf(stderr,
-                GRN "debug_realloc called on line %d, in file %s. Statement used to resize was (%s) is equal to %d. Pointer named (%s) has been resized %d times.\n" RESET,
-                line, file, resize_statement, size, name, d->realloc_count + 1);
+#if PRINT_ALL
+    fprintf(stderr,
+             YEL "debug_realloc called on line %d, in file %s. Statement used to resize was (%s) is equal to %d. Pointer named (%s) has been resized %d times.\n" RESET,
+            line, file, resize_statement, size, name, d->realloc_count + 1);
+#endif
     d->alias.name = name;
     d->alias.known = true;
     d->realloc_count++;
@@ -136,15 +137,15 @@ void *debug_realloc(void *ptr, size_t size, uint32 line, char *file, char *resiz
     return new_ptr;
 }
 
-
 /* should act as constructor like malloc */
 void *debug_calloc(size_t num, size_t size, uint32 line, char *file, char *resize_statement)
 {
     void *ptr = calloc(num, size);
-    if (PRINT_ALL)
-        fprintf(stderr,
-                GRN "debug_calloc called on line %d, in file %s. Statement used to resize was (%s) is equal to %d.\n" RESET,
-                line, file, resize_statement, size);
+#if PRINT_ALL
+    fprintf(stderr,
+             YEL "debug_calloc called on line %d, in file %s. Statement used to resize was (%s) is equal to %d.\n" RESET,
+            line, file, resize_statement, size);
+#endif
     Name n = {.known = false, .name = "Lengthy_Placeholder"};
     Debug_Data d = {.data = ptr, .file = __FILE__, .line = __LINE__, .realloc_count = 0, .alias = n};
     debug_vec.push_back(&debug_vec, d);
@@ -165,35 +166,35 @@ void debug_free(void *ptr, uint32 line, char *file, char *var_name)
     if (ret.err != VEC_OK)
         return;
     Debug_Data *found = unpack_Debug_Data(ret);
-    if (PRINT_ALL)
-    {
+#if PRINT_ALL
         fprintf(stderr,
-                GRN "debug_free freeing variable on (line %d, file %s) from (line %d, file %s). Pointer %p was resized %d times.\n" RESET,
+                 "debug_free freeing variable on (line %d, file %s) from (line %d, file %s). Pointer %p was resized %d times.\n" RESET,
                 line, file, found->line, found->file, var_name, found->realloc_count);
+#endif
+        ASSERT_ON_ERROR(debug_vec.remove(&debug_vec, ret.index), "debug_free error freeing debug_vec, likely freed unallocated memory.");
+        free(ptr);
     }
-    ASSERT_ON_ERROR(debug_vec.remove(&debug_vec, ret.index), "debug_free error freeing debug_vec, likely freed unallocated memory.");
-    free(ptr);
-}
 
-/* print all unfreed pointers */
-void *find_leaks(void)
-{
-    int i;
-    for (i = 0; i < debug_vec.size; i++)
+    /* print all unfreed pointers */
+    void *find_leaks(void)
     {
-        char* n = "Unknown_Ptr_Alias";
-        Debug_Data *d = unpack_Debug_Data(debug_vec.at(&debug_vec, i));
-        if (d->alias.known) n = d->alias.name;
-        fprintf(stderr, RED "Pointer '%s' at address %p not freed. Initialized on line %d in file %s.\n" RESET,
-                n, d->data, d->line, d->file);
-        free(d->data);
+        int i;
+        for (i = 0; i < debug_vec.size; i++)
+        {
+            char *n = "Unknown_Ptr_Alias";
+            Debug_Data *d = unpack_Debug_Data(debug_vec.at(&debug_vec, i));
+            if (d->alias.known)
+                n = d->alias.name;
+            fprintf(stderr, RED "Pointer '%s' at address %p not freed." WHT " Allocated on line %d in file %s.\n" RESET,
+                    n, d->data, d->line, d->file);
+            free(d->data);
+        }
+        debug_vec.free(&debug_vec);
+        if (i == 0)
+            fprintf(stderr, GRN "No Leaks Found :)\n" RESET);
+        else
+            fprintf(stderr, RED "Found & Patched %d leaks.\n" RESET, i);
     }
-    debug_vec.free(&debug_vec);
-    if (i == 0)
-        fprintf(stderr, GRN "No Leaks Found :)\n" RESET);
-    else
-        fprintf(stderr, RED "Found & Patched %d leaks.\n" RESET, i);
-}
 
 #if DEBUG_MEM == 1
 /* DEBUG MALLOC */
