@@ -84,6 +84,8 @@ get an error and follow the error tree in stderr.
 	} Comparison;
 I've written compare_ints and compare_floats functions and in the stdlib you can use strcmp to compare strings.
 Any other types need their own compare method to be written and passed as an argument upon initialization.
+The only method which uses the comparison func is find and it only uses the EQUAL.
+You can use the comparison func to ensure you can use sorting algos on the struct.
 
 
 # Behavior of Note: (all for functions called through func ptr except create/init)
@@ -95,4 +97,3 @@ Any other types need their own compare method to be written and passed as an arg
  6. When reading the code, if you find a function with a comment indicating it is internal, do not call it
  7. you can forget about most of the error handling and worry about it when it comes up
 	by using unpack_##type, ASSERT_ON_ERROR, and RETURN_ON_ERROR
- 8. The definitions and implemetation can be seperated for use in a header file

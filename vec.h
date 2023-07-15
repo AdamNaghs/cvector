@@ -85,62 +85,7 @@ typedef enum
  6. When reading the code, if you find a function with a comment indicating it is internal, do not call it
  7. you can forget about most of the error handling and worry about it when it comes up
 	by using unpack_##type, ASSERT_ON_ERROR, and RETURN_ON_ERROR
- 8. The definitions and implemetation can be seperated for use in a header file
 */
-
-/* define definitions */
-#define DEFINE_RETURN_TYPE_DEF(type)            \
-    typedef struct Return_##type Return_##type; \
-                                                \
-    struct Return_##type                        \
-    {                                           \
-        type *data;                             \
-        size_t index;                           \
-        Vec_Error err;                          \
-    };                                          \
-                                                \
-    type *unpack_##type(Return_##type unpack)
-
-#define DEFINE_VEC_DEF(type, name)                                             \
-    typedef struct name name;                                                  \
-    typedef Comparison (*Vec_Compare_Func_##type)(const type *, const type *); \
-    struct name                                                                \
-    {                                                                          \
-        type *data;                                                            \
-        size_t size;                                                           \
-        size_t capacity;                                                       \
-        Vec_Compare_Func_##type compare_vals;                                  \
-        bool (*empty)(name * this);                                            \
-        size_t (*read_size)(name * this);                                      \
-        size_t (*read_capacity)(name * this);                                  \
-        Vec_Error (*free)(name * this);                                        \
-        Vec_Error (*clear)(name * this);                                       \
-        Vec_Error (*compact)(name * this);                                     \
-        Vec_Error (*remove)(name * this, size_t index);                        \
-        Vec_Error (*realloc)(name * this, size_t capacity);                    \
-        Vec_Error (*push_back)(name * this, type value);                       \
-        Vec_Error (*insert)(name * this, size_t index, type value);            \
-        Vec_Error (*swap)(name * this, size_t index0, size_t index1);          \
-        Return_##type (*find)(name * this, type value);                        \
-        Return_##type (*at)(name * this, size_t index);                        \
-    };                                                                         \
-    Vec_Error vec_realloc_##name(name *v, size_t capacity);                    \
-    Vec_Error vec_try_resize_##name(name *v);                                  \
-    Vec_Error vec_oob_check_##name(name *v, size_t index);                     \
-    Vec_Error vec_swap##name(name *v, size_t index0, size_t index1);           \
-    Vec_Error vec_clear_##name(name *v);                                       \
-    Vec_Error vec_compact_##name(name *v);                                     \
-    Vec_Error vec_free_##name(name *v);                                        \
-    size_t vec_size_##name(name *v);                                           \
-    size_t vec_capacity_##name(name *v);                                       \
-    bool vec_empty_##name(name *v);                                            \
-    Vec_Error vec_push_back_##name(name *v, type value);                       \
-    Vec_Error vec_insert_##name(name *v, size_t index, type value);            \
-    Vec_Error vec_remove_##name(name *v, size_t index);                        \
-    Return_##type vec_find_##name(name *v, type value);                        \
-    Return_##type vec_at_##name(name *v, size_t index);                        \
-    Vec_Error name##_init(name *v, Vec_Compare_Func_##type compare_values);    \
-    name create_##name(Vec_Compare_Func_##type compare_values);
 
 
 #define ASSERT_ON_ERROR(err, func_name_string)                  \
@@ -178,27 +123,32 @@ typedef enum
 		}                                                                  \
 	} while (0)
 
-#define DEFINE_RETURN_TYPE_IMPL(type)                      \
-	typedef struct Return_##type Return_##type;       \
-                                                      \
-	struct Return_##type                              \
-	{                                                 \
-		type *data;                                   \
-		size_t index;                                 \
-		Vec_Error err;                                \
-	};                                                \
-                                                      \
-	type *unpack_##type(Return_##type unpack)         \
-	{                                                 \
-		ASSERT_ON_ERROR(unpack.err, "unpack_" #type); \
-		return unpack.data;                           \
+#define DEFINE_RETURN_TYPE_IMPL(type)                                  \
+	typedef struct Return_##type Return_##type;                        \
+                                                                       \
+	struct Return_##type                                               \
+	{                                                                  \
+		type *data;                                                    \
+		size_t index;                                                  \
+		Vec_Error err;                                                 \
+	};                                                                 \
+                                                                       \
+	type *unpack_##type(Return_##type unpack)                          \
+	{                                                                  \
+		ASSERT_ON_ERROR(unpack.err, "unpack_" #type);                  \
+		return unpack.data;                                            \
+	}                                                                  \
+	Return_##type pack_##type(type *data, size_t index, Vec_Error err) \
+	{                                                                  \
+		Return_##type d = {data, index, err};                          \
+		return d;                                                      \
 	}
 
 #define VEC_INITIAL_CAPACITY 0
 
 /* define implementation */
-#define DEFINE_VEC_IMPL(type, name)                                                                        \
-	DEFINE_RETURN_TYPE_IMPL(type);                                                                         \
+#define DEFINE_VEC(type, name)                                                                   \
+	DEFINE_RETURN_TYPE_IMPL(type);                                                                    \
 	typedef struct name name;                                                                         \
 	typedef Comparison (*Vec_Compare_Func_##type)(const type *, const type *);                        \
                                                                                                       \
@@ -208,19 +158,19 @@ typedef enum
 		size_t size;                                                                                  \
 		size_t capacity;                                                                              \
 		Vec_Compare_Func_##type compare_vals;                                                         \
-		bool (*empty)(name * this);                                                                   \
-		size_t (*read_size)(name * this);                                                             \
-		size_t (*read_capacity)(name * this);                                                         \
-		Vec_Error (*free)(name * this);                                                               \
-		Vec_Error (*clear)(name * this);                                                              \
-		Vec_Error (*compact)(name * this);                                                            \
-		Vec_Error (*remove)(name * this, size_t index);                                               \
-		Vec_Error (*realloc)(name * this, size_t capacity);                                           \
-		Vec_Error (*push_back)(name * this, type value);                                              \
-		Vec_Error (*insert)(name * this, size_t index, type value);                                   \
-		Vec_Error (*swap)(name * this, size_t index0, size_t index1);                                 \
-		Return_##type (*find)(name * this, type value);                                               \
-		Return_##type (*at)(name * this, size_t index);                                               \
+		bool (*empty)(name *);                                                                        \
+		size_t (*read_size)(name *);                                                                  \
+		size_t (*read_capacity)(name *);                                                              \
+		Vec_Error (*free)(name *);                                                                    \
+		Vec_Error (*clear)(name *);                                                                   \
+		Vec_Error (*compact)(name *);                                                                 \
+		Vec_Error (*remove)(name *, size_t index);                                                    \
+		Vec_Error (*realloc)(name *, size_t capacity);                                                \
+		Vec_Error (*push_back)(name *, type value);                                                   \
+		Vec_Error (*insert)(name *, size_t index, type value);                                        \
+		Vec_Error (*swap)(name *, size_t index0, size_t index1);                                      \
+		Return_##type (*find)(name *, type value);                                                    \
+		Return_##type (*at)(name *, size_t index);                                                    \
 	};                                                                                                \
                                                                                                       \
 	Vec_Error vec_realloc_##name(name *v, size_t capacity)                                            \
@@ -228,7 +178,7 @@ typedef enum
 		RETURN_IF_NULL(v, "realloc_" #type, VEC_GIVEN_NULL_ERROR);                                    \
 		if (capacity <= 0)                                                                            \
 			capacity = 1;                                                                             \
-		type *new_data = realloc(v->data, capacity * sizeof(type));                                   \
+		type *new_data = (type *)realloc(v->data, capacity * sizeof(type));                           \
 		RETURN_IF_NULL(new_data, "realloc_" #type, VEC_ALLOC_ERROR);                                  \
 		v->data = new_data;                                                                           \
 		v->capacity = capacity;                                                                       \
@@ -279,7 +229,7 @@ typedef enum
 	{                                                                                                 \
 		RETURN_IF_NULL(v, "clear_" #name, VEC_GIVEN_NULL_ERROR);                                      \
 		for (size_t i = 0; i < v->size; i++)                                                          \
-			v->data[i] = 0;                                                                           \
+			memcpy(&v->data[i], 0, sizeof(v->data[i]));                                               \
 		v->size = 0;                                                                                  \
 		return VEC_OK;                                                                                \
 	}                                                                                                 \
@@ -361,30 +311,31 @@ typedef enum
 	Return_##type vec_find_##name(name *v, type value)                                                \
 	{                                                                                                 \
 		RETURN_IF_NULL(v, "find_" #name,                                                              \
-					   ((Return_##type){NULL, -1, VEC_GIVEN_NULL_ERROR}));                            \
+					   (pack_##type(NULL, -1, VEC_GIVEN_NULL_ERROR)));                                \
 		int i;                                                                                        \
 		for (i = 0; i < v->size; i++)                                                                 \
 		{                                                                                             \
-			if (v->compare_vals(&(v->data[i]), &value))                                               \
-				return (Return_##type){&v->data[i], (size_t)i, VEC_OK};                               \
+			if (v->compare_vals(&(v->data[i]), &value) == EQUAL)                                      \
+				return pack_##type(&v->data[i], (size_t)i, VEC_OK);                                   \
 		}                                                                                             \
-		return (Return_##type){NULL, -1, VEC_CANT_FIND_ERROR};                                        \
+		return pack_##type(NULL, -1, VEC_CANT_FIND_ERROR);                                            \
 	}                                                                                                 \
                                                                                                       \
 	Return_##type vec_at_##name(name *v, size_t index)                                                \
 	{                                                                                                 \
 		RETURN_IF_NULL(v, "at_" #name,                                                                \
-					   ((Return_##type){NULL, -1, VEC_GIVEN_NULL_ERROR}));                            \
+					   (pack_##type(NULL, -1, VEC_GIVEN_NULL_ERROR)));                                \
 		Vec_Error err = vec_oob_check_##name(v, index);                                               \
+                                                                                                      \
 		if (err != VEC_OK)                                                                            \
-			return (Return_##type){NULL, -1, err};                                                    \
-		return (Return_##type){&v->data[index], index, VEC_OK};                                       \
+			return pack_##type(NULL, -1, err);                                                        \
+		return pack_##type(&v->data[index], index, VEC_OK);                                           \
 	}                                                                                                 \
                                                                                                       \
 	Vec_Error name##_init(name *v, Vec_Compare_Func_##type compare_values)                            \
 	{                                                                                                 \
 		RETURN_IF_NULL(v, "init_" #name, VEC_GIVEN_NULL_ERROR);                                       \
-		v->data = malloc(VEC_INITIAL_CAPACITY * sizeof(type));                                        \
+		v->data = (type *)malloc(VEC_INITIAL_CAPACITY * sizeof(type));                                \
 		RETURN_IF_NULL(v->data, "init_" #name, VEC_ALLOC_ERROR);                                      \
 		v->size = 0;                                                                                  \
 		v->capacity = VEC_INITIAL_CAPACITY;                                                           \

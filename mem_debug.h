@@ -2,6 +2,33 @@
 #define MEM_DEBUG_H
 #include "colored_assert.h"
 #include "util.h"
+#include "vec.h"
+
+/* simple single threaded memory debugger */
+
+typedef struct
+{
+    void *data;
+    char *file;
+    uint32 line;
+    uint32 realloc_count;
+} Debug_Data;
+
+// DEFINE_VEC_DEF(Debug_Data, Vec_Mem);
+DEFINE_VEC(Debug_Data, Vec_Mem);
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /* set to 1 to enable */
 #define DEBUG_MEM 1
@@ -16,15 +43,19 @@
     report all memory left unfreed.
 */
 
-typedef struct
-{
-    void *data;
-    char *file;
-    uint32 line;
-    uint32 realloc_count;
-} Debug_Data;
-
 /* malloc should act as a constructor for Debug_Data */
+
+Comparison debug_data_cmp(const Debug_Data *a, const Debug_Data *b)
+{
+    if ((a->data == b->data) ||
+        ((a->line == b->line) && (a->file == b->file)))
+        return EQUAL;
+    if (a->line < b->line)
+        return LESS;
+    return GREATER;
+}
+
+Vec_Mem memory_vec = create_Vec_Mem(debug_data_cmp);
 
 void *debug_malloc(size_t size, uint32 line, char *file, char *resize_statement)
 {
@@ -32,6 +63,8 @@ void *debug_malloc(size_t size, uint32 line, char *file, char *resize_statement)
     FPRINTF_ASSERT(stderr, ptr != NULL,
                    "debug_malloc malloc returned NULL PTR when passed size %d, on line %d, in file %s. Statement used to resize was %s",
                    size, line, file, resize_statement);
+
+    vec_push_back_Vec_Mem(&memory_vec, {ptr, __FILE__, __LINE__, 0});
     return ptr;
 }
 
@@ -47,10 +80,13 @@ void *debug_realloc(void *ptr, size_t size, uint32 line, char *file, char *resiz
     FPRINTF_ASSERT(stderr, new_ptr != NULL,
                    "debug_realloc realloc returned NULL PTR when passed size %d, on line %d, in file %s. Statement used to resize was %s",
                    size, line, file, resize_statement);
+    Debug_Data *d = unpack_Debug_Data(vec_find_Vec_Mem(&memory_vec, {ptr}));
+    d->data = new_ptr;
+    d->realloc_count++;
     return new_ptr;
 }
 
-/* should as constructor like malloc */
+/* should act as constructor like malloc */
 
 void *debug_calloc(size_t num, size_t size, uint32 line, char *file, char *resize_statement)
 {
@@ -58,22 +94,36 @@ void *debug_calloc(size_t num, size_t size, uint32 line, char *file, char *resiz
     FPRINTF_ASSERT(stderr, ptr != NULL,
                    "debug_calloc calloc returned NULL PTR when passed size %d, on line %d, in file %s. Statement used to resize was %s",
                    size, line, file, resize_statement);
+    vec_push_back_Vec_Mem(&memory_vec, {ptr, __FILE__, __LINE__, 0});
     return ptr;
 }
 
 /* freak out if we didnt get Debug_data */
 
-void *debug_free(void *ptr, uint32 line, char *file, char *var_name)
+void debug_free(void *ptr, uint32 line, char *file, char *var_name)
 {
     FPRINTF_ASSERT(stderr, ptr != NULL,
                    "debug_free free attempting to free NULL PTR, on line %d, in file %s. Pointer name was %s,\n",
                    line, file, var_name);
+    size_t index = (vec_find_Vec_Mem(&memory_vec, {ptr})).index;
+    ASSERT_ON_ERROR(vec_remove_Vec_Mem(&memory_vec, index), "error freeing memory_vec");
     free(ptr);
 }
 
-/* write func which should be ran at the end of program to report all unfreed data 
+/* write func which should be ran at the end of program to report all unfreed data
     and print to stderr the original line and file it was allocated on
 */
+
+void find_leaks(void)
+{
+    int i;
+    for (i = 0; i < memory_vec.size; i++)
+    {
+        Debug_Data* d = unpack_Debug_Data(vec_at_Vec_Mem(&memory_vec, i));
+        fprintf(stderr, "Pointer at address %p not freed. Initialized on line %d in file %s\n",
+                d->data, d->line, d->file);
+    }
+}
 
 #if DEBUG_MEM == 1
 #define malloc(size) (debug_malloc(size, __LINE__, __FILE__, #size))
