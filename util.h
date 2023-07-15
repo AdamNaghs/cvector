@@ -3,7 +3,6 @@
 
 #include <stdint.h>
 
-
 typedef uint8_t uint8;
 typedef uint16_t uint16;
 typedef uint32_t uint32;
@@ -27,7 +26,7 @@ float inv_sqrt(float number)
     y = y * (1.5 - (x * y * y));
     return number * y;
 }
-float f_sqrt(float number )
+float f_sqrt(float number)
 {
     return 1 / inv_sqrt(number);
 }
