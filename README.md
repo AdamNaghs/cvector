@@ -101,7 +101,7 @@ You can forego this fascade and just call the mangled functions that are defined
 	DEFINE_VEC(int,Vec_Int,compare_ints);
 	Vec_Int v = create_Vec_Int();
 	
-	Return_int x = vec_at_Vec_Int(v,1);
+	Return_int x = vec_at_Vec_Int(&v,1);
 	int* x_val = unpack_int(x); 
 As opposed to
 
