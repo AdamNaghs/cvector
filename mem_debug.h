@@ -44,7 +44,6 @@ Comparison debug_data_cmp(const Debug_Data *a, const Debug_Data *b)
     return GREATER;
 }
 
-Vec_Mem debug_vec = create_Vec_Mem(debug_data_cmp);
 
 void *debug_malloc(size_t size, uint32 line, char *file, char *resize_statement)
 {
@@ -52,8 +51,8 @@ void *debug_malloc(size_t size, uint32 line, char *file, char *resize_statement)
     FPRINTF_ASSERT(stderr, ptr != NULL,
                    "debug_malloc malloc returned NULL PTR when passed size %d, on line %d, in file %s. Statement used to resize was %s",
                    size, line, file, resize_statement);
-
-    debug_vec.push_back(&debug_vec, {ptr, __FILE__, __LINE__, 0});
+    Debug_Data d = {ptr, __FILE__, __LINE__, 0};
+    debug_vec.push_back(&debug_vec, d);
     return ptr;
 }
 
@@ -69,7 +68,8 @@ void *debug_realloc(void *ptr, size_t size, uint32 line, char *file, char *resiz
     FPRINTF_ASSERT(stderr, new_ptr != NULL,
                    "debug_realloc realloc returned NULL PTR when passed size %d, on line %d, in file %s. Statement used to resize was %s",
                    size, line, file, resize_statement);
-    Debug_Data *d = unpack_Debug_Data(debug_vec.find(&debug_vec, {ptr}));
+    Debug_Data in = {ptr};
+    Debug_Data *d = unpack_Debug_Data(debug_vec.find(&debug_vec, in));
     d->data = new_ptr;
     d->realloc_count++;
     return new_ptr;
@@ -83,7 +83,8 @@ void *debug_calloc(size_t num, size_t size, uint32 line, char *file, char *resiz
     FPRINTF_ASSERT(stderr, ptr != NULL,
                    "debug_calloc calloc returned NULL PTR when passed size %d, on line %d, in file %s. Statement used to resize was %s",
                    size, line, file, resize_statement);
-    debug_vec.push_back(&debug_vec, {ptr, __FILE__, __LINE__, 0});
+    Debug_Data d = {ptr, __FILE__, __LINE__, 0};
+    debug_vec.push_back(&debug_vec, d);
     return ptr;
 }
 
@@ -94,7 +95,8 @@ void debug_free(void *ptr, uint32 line, char *file, char *var_name)
     FPRINTF_ASSERT(stderr, ptr != NULL,
                    "debug_free free attempting to free NULL PTR, on line %d, in file %s. Pointer name was %s,\n",
                    line, file, var_name);
-    size_t index = (debug_vec.find(&debug_vec, {ptr})).index;
+    Debug_Data d = {ptr};
+    size_t index = (debug_vec.find(&debug_vec, d)).index;
     ASSERT_ON_ERROR(debug_vec.remove(&debug_vec, index), "error freeing debug_vec");
     free(ptr);
 }
