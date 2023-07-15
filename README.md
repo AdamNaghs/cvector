@@ -59,7 +59,7 @@ Otherwise you'll be told your Vec was allocated wherever you defined it with DEF
 
  
   
- # Errors
+ # Errors & Unpacking
  The error checking system ive made allows you to use to be able to forget able errors
  until they pop up.
  This is done through an unpacker for the Return_type.
