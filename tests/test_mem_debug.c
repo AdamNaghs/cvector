@@ -1,15 +1,17 @@
-#include "mem_debug.h"
+#include "../mem_debug.h"
 
 
 
 
 DEFINE_VEC(int,Vec_Int);
 
-MEM_DEBUG_INIT;
+
+
+MEM_DEBUG_INIT();
 
 int main()
 {   
-    MEM_DEBUG_START;
+    MEM_DEBUG_START();
 
     Vec_Int v ;
     CREATE_VEC(&v,compare_ints,int,Vec_Int);
@@ -26,7 +28,7 @@ int main()
     //free(k);
     free(i);
     (vec->free)(vec);
-    MEM_DEBUG_END;
+    MEM_DEBUG_END();
 
     return 0;
 

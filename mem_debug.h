@@ -21,20 +21,19 @@
 /* set to 1 to enable printing when there are no errors */
 #define PRINT_ALL 1
 
-/* 
-   Use these three macros to run the memory debugger 
-   You can ignore the rest of the file    
+/*
+   Use these three macros to run the memory debugger
+   You can ignore the rest of the file
 */
 
 /* init global variable */
-#define MEM_DEBUG_INIT Vec_Mem debug_vec
+#define MEM_DEBUG_INIT() Vec_Mem debug_vec
 
 /* start in func */
-#define MEM_DEBUG_START init_leak_finder()
+#define MEM_DEBUG_START() init_leak_finder()
 
 /* end in func */
-#define MEM_DEBUG_END find_leaks()
-
+#define MEM_DEBUG_END() find_leaks()
 
 /* Implementation below */
 
@@ -65,7 +64,6 @@ void init_leak_finder(void)
 {
     debug_vec = create_Vec_Mem(debug_data_cmp);
 }
-
 
 /* malloc should act as a constructor for Debug_Data */
 
