@@ -27,16 +27,17 @@
 */
 
 /* init global variable */
-#define MEM_DEBUG_INIT() Vec_Mem debug_vec
+#define MEM_DEBUG_INIT Vec_Mem debug_vec
 
-/* start in func */
+/* start in mem debugging */
 #define MEM_DEBUG_START() init_leak_finder()
 
-/* end in func */
+/* end mem debugging and print all unfreed pointers */
 #define MEM_DEBUG_END() find_leaks()
 
 /* Implementation below */
 
+/* every time we allocate memory we save Debug data to a Vec */
 typedef struct
 {
     void *data;
@@ -48,6 +49,7 @@ typedef struct
 /* define Vec_Mem*/
 DEFINE_VEC(Debug_Data, Vec_Mem);
 
+/* define external variable (initialized with MEM_DEBUG_INIT) */
 extern Vec_Mem debug_vec;
 
 Comparison debug_data_cmp(const Debug_Data *a, const Debug_Data *b)
@@ -65,8 +67,7 @@ void init_leak_finder(void)
     debug_vec = create_Vec_Mem(debug_data_cmp);
 }
 
-/* malloc should act as a constructor for Debug_Data */
-
+/* malloc acts as a constructor for Debug_Data */
 void *debug_malloc(size_t size, uint32 line, char *file, char *resize_statement)
 {
     void *ptr = malloc(size);
@@ -74,7 +75,7 @@ void *debug_malloc(size_t size, uint32 line, char *file, char *resize_statement)
         fprintf(stderr,
                 GRN "debug_malloc called on line %d, in file %s. Statement used to resize was (%s) is equal to %d.\n" RESET,
                 line, file, resize_statement, size);
-    Debug_Data d = {ptr, file, line, 0};
+    Debug_Data d = {.data = ptr, .file = file, .line = line, .realloc_count = 0};
     debug_vec.push_back(&debug_vec, d);
     return ptr;
 }
@@ -82,7 +83,7 @@ void *debug_malloc(size_t size, uint32 line, char *file, char *resize_statement)
 /*
     the ptr we get in realloc should be the same we gave in malloc
     but we will give a new ptr back and just update the debug_data and not
-    the line so we know where it came from
+    the line or file so we know where it came from
     Increment the realloc count
 */
 void *debug_realloc(void *ptr, size_t size, uint32 line, char *file, char *resize_statement, char *name)
@@ -100,7 +101,6 @@ void *debug_realloc(void *ptr, size_t size, uint32 line, char *file, char *resiz
 }
 
 /* should act as constructor like malloc */
-
 void *debug_calloc(size_t num, size_t size, uint32 line, char *file, char *resize_statement)
 {
     void *ptr = calloc(num, size);
@@ -113,8 +113,7 @@ void *debug_calloc(size_t num, size_t size, uint32 line, char *file, char *resiz
     return ptr;
 }
 
-/* freak out if we didnt get Debug_data */
-
+/* freak out if we try to free data not in the Vec */
 void debug_free(void *ptr, uint32 line, char *file, char *var_name)
 {
     Debug_Data find = {ptr};
@@ -134,10 +133,7 @@ void debug_free(void *ptr, uint32 line, char *file, char *var_name)
     free(ptr);
 }
 
-/* write func which should be ran at the end of program to report all unfreed data
-    and print to stderr the original line and file it was allocated on
-*/
-
+/* print all unfreed pointers */
 void find_leaks(void)
 {
     int i;
@@ -151,9 +147,13 @@ void find_leaks(void)
 }
 
 #if DEBUG_MEM == 1
+/* DEBUG MALLOC */
 #define malloc(size) (debug_malloc(size, __LINE__, __FILE__, #size))
+/* DEBUG REALLOC */
 #define realloc(ptr, size) (debug_realloc(ptr, size, __LINE__, __FILE__, #size, #ptr))
+/* DEBUG CALLOC */
 #define calloc(num, size) (debug_calloc(num, size, __LINE__, __FILE__, #size))
+/* DEBUG FREE */
 #define free(ptr) (debug_free(ptr, __LINE__, __FILE__, #ptr))
 #endif /* DEBUG_MEM */
 

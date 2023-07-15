@@ -6,8 +6,7 @@
 DEFINE_VEC(int,Vec_Int);
 
 
-
-MEM_DEBUG_INIT();
+MEM_DEBUG_INIT;
 
 int main()
 {   
@@ -27,8 +26,8 @@ int main()
 
     //free(k);
     free(i);
-    (vec->free)(vec);
     MEM_DEBUG_END();
+    (vec->free)(vec);
 
     return 0;
 
