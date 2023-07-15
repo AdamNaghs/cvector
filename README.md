@@ -30,8 +30,8 @@ get an error and follow the error tree in stderr.
    	
 
  # Under the hood
- The user should not access the internal variables, and should
- only use the functions attached to the type via func ptr in the init.
+ The user should not access the internal functions (i.e. funcs with internal in the name), and should
+ only use the functions attached to the type via func ptr in the init. Please reframe from reading the data directly or the size or capacity.
  The methods used to define the func ptrs will be slightly mangled so they
  are different each time the macro is called,
  as long as the user doesnt use the same name twice.
