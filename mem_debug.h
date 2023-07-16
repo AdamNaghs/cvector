@@ -33,8 +33,9 @@
 
 /*
     Print info of all pointers currently allocated
+    File Name must be less than 100 chars long
 */
-#define MEM_DEBUG_INSPECT(stream) (debug_print_table(stream))
+#define MEM_DEBUG_INSPECT(stream) (debug_print_table(stream,__LINE__,__FILE__))
 
 /* Implementation below */
 
@@ -50,6 +51,7 @@ typedef struct
 {
     void *data;
     char *file;
+    size_t size_bytes;
     uint32 line;
     uint32 realloc_count;
     Name alias;
@@ -87,16 +89,19 @@ void print_char_x_times(FILE *stream, char ch, int num)
     }
 }
 
-void debug_print_table(FILE *stream)
+
+void debug_print_table(FILE *stream, uint32_t line, char* file)
 {
     size_t i;
     size_t size = vec_size_Vec_Mem(&debug_vec);
     assert(size != SIZE_MAX);
 
     // Print table header
-    fprintf(stream, "%s| %15s  | %10s | %13s | %4s |\n", MAG, "Pointer Alias", "Alloc Line", "Realloc Count", "File");
-    const uint8 padding = 10;
-    const uint8 bar_length = 14 + 10 + 13 + 50 + 20 + padding;
+    fprintf(stream, MAG"Beginning Memory Inspection: " YEL "line %d"WHT" in" YEL " file %s \n", line, file);
+    fprintf(stream, "%s| %s | %15s | %13s | %15s | %s |\n", MAG, "Pointer Address", "Alloc Line", "Realloc Count", "Data Size (Bytes)", "File");
+    
+    const uint8_t padding = 40;
+    const uint8_t bar_length = 16 + 15 + 13 + 15 + 100 + padding;
     print_char_x_times(stream, '-', bar_length);
     fprintf(stream, "%s\n", MAG);
 
@@ -104,13 +109,15 @@ void debug_print_table(FILE *stream)
     {
         char *color = PICK_COLOR;
         Debug_Data *d = unpack_Debug_Data(vec_at_Vec_Mem(&debug_vec, i));
-        fprintf(stream, "%s| %14p | %10d | %13d | %-50s |\n" RESET,
-                color, d->data, d->line, d->realloc_count, d->file);
+        fprintf(stream, "%s| %p | %15d | %13d | %15lu | %s |\n" RESET,
+                color, d->data, d->line, d->realloc_count, d->size_bytes, d->file);
     }
+
     fprintf(stream, "%s", PICK_COLOR);
     print_char_x_times(stream, '-', bar_length);
-    fprintf(stream, "\n%sEnd of Memory Inspection.\n" RESET, PICK_COLOR);
+    fprintf(stream, "\nEnd of Memory Inspection: " YEL "line %d"WHT" in" YEL " file %s \n", line, file);
 }
+
 
 void debug_inspect_memory(FILE *stream)
 {
@@ -144,7 +151,7 @@ void *debug_malloc(size_t size, uint32 line, char *file, char *resize_statement)
             line, file, resize_statement, size);
 #endif
     Name n = {.known = false, .name = "Lengthy_Placeholder"};
-    Debug_Data d = {.data = ptr, .file = file, .line = line, .realloc_count = 0, .alias = n};
+    Debug_Data d = {.data = ptr, .size_bytes = size, .file = file, .line = line, .realloc_count = 0, .alias = n};
     vec_push_back_Vec_Mem(&debug_vec, d);
     return ptr;
 }
@@ -167,6 +174,7 @@ void *debug_realloc(void *ptr, size_t size, uint32 line, char *file, char *resiz
 #endif
     d->alias.name = name;
     d->alias.known = true;
+    d->size_bytes = size;
     d->realloc_count++;
     d->data = new_ptr;
     return new_ptr;
@@ -182,7 +190,7 @@ void *debug_calloc(size_t num, size_t size, uint32 line, char *file, char *resiz
             line, file, resize_statement, size);
 #endif
     Name n = {.known = false, .name = "Lengthy_Placeholder"};
-    Debug_Data d = {.data = ptr, .file = __FILE__, .line = __LINE__, .realloc_count = 0, .alias = n};
+    Debug_Data d = {.data = ptr, .size_bytes = size, .file = __FILE__, .line = __LINE__, .realloc_count = 0, .alias = n};
     vec_push_back_Vec_Mem(&debug_vec, d);
     return ptr;
 }
