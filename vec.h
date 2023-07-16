@@ -1,5 +1,5 @@
 #ifndef VEC_H
-#define VEC_H /* 7/14/23 By Adam Naghavi*/
+#define VEC_H /* 7/16/23 By Adam Naghavi*/
 
 #include <stdbool.h>
 #include <stdlib.h>
@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <assert.h>
+
 /*
 	To ensure modularity, the user can, and must for unique struct, define their own comparison
 	function to be used in the vector to ensure intended behavior.
@@ -364,6 +365,9 @@ typedef enum
 		return init_vec;                                                                                   \
 	}
 
+/*
+	Creates vector, indended use is for debugging with mem_debug.h
+*/
 #define CREATE_VEC(v, compare_values, type, name)                          \
 	do                                                                     \
 	{                                                                      \
