@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include "../mem_debug.h"
 
+
 #define NUM_THREADS 5
 #define NUM_ALLOCATIONS 10
 #define ALLOCATION_SIZE 100
@@ -33,7 +34,8 @@ int main() {
             printf("Failed to create thread\n");
             return 1;
         }
-    }
+    
+    BOOL b = CompareObjectHandles(threads[NUM_THREADS-1],threads[NUM_THREADS-2]);
 
     // Wait for all threads to finish
     for (int i = 0; i < NUM_THREADS; i++) {

@@ -130,3 +130,13 @@ As opposed to
 	this macro takes many args but ensures the __LINE__ & __FILE__ macros work as expected.
  9. If you prefer not to use the object oriented way of using this struct you can call the function it defines
 	and links as function ptrs. However the object oriented method provides the ability to easily change the type of your Vec
+
+# Type specific implementation
+If you want to alter the Vec's implementation for a specific type: 
+expand the macro, use a formatter, and then alter whatever aspects are causing trouble
+for your specific use case. 
+
+The only time you would need to do this is if you want to free your structs using a specific command.
+Ex: closing windows thread handles needs CloseHandle(threads[i]).
+
+This can be avoided by writing a function to do your specific clearing/removing.

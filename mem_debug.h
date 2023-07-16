@@ -68,7 +68,7 @@ Comparison debug_data_cmp(const Debug_Data *a, const Debug_Data *b)
 /* define Vec_Mem */
 DEFINE_VEC(Debug_Data, Vec_Mem, debug_data_cmp);
 
-/* define static variable (initialized with MEM_DEBUG_INIT) */
+/* define static variable (initialized when including header) */
 
 static Vec_Mem debug_vec =
     {
