@@ -34,7 +34,7 @@
 /*
     Print info of all pointers currently allocated
 */
-#define MEM_DEBUG_INSPECT(stream) (debug_inspect_memory(stream))
+#define MEM_DEBUG_INSPECT(stream) (debug_print_table(stream))
 
 /* Implementation below */
 
@@ -78,6 +78,39 @@ static Vec_Mem debug_vec =
 };
 
 #define PICK_COLOR (i % 2 == 0 ? CYN : MAG)
+
+void print_char_x_times(FILE *stream, char ch, int num)
+{
+    for (int i = 0; i < num; i++)
+    {
+        fputc(ch, stream);
+    }
+}
+
+void debug_print_table(FILE *stream)
+{
+    size_t i;
+    size_t size = vec_size_Vec_Mem(&debug_vec);
+    assert(size != SIZE_MAX);
+
+    // Print table header
+    fprintf(stream, "%s| %15s  | %10s | %13s | %4s |\n", MAG, "Pointer Alias", "Alloc Line", "Realloc Count", "File");
+    const uint8 padding = 10;
+    const uint8 bar_length = 14 + 10 + 13 + 50 + 20 + padding;
+    print_char_x_times(stream, '-', bar_length);
+    fprintf(stream, "%s\n", MAG);
+
+    for (i = 0; i < size; i++)
+    {
+        char *color = PICK_COLOR;
+        Debug_Data *d = unpack_Debug_Data(vec_at_Vec_Mem(&debug_vec, i));
+        fprintf(stream, "%s| %14p | %10d | %13d | %-50s |\n" RESET,
+                color, d->data, d->line, d->realloc_count, d->file);
+    }
+    fprintf(stream, "%s", PICK_COLOR);
+    print_char_x_times(stream, '-', bar_length);
+    fprintf(stream, "\n%sEnd of Memory Inspection.\n" RESET, PICK_COLOR);
+}
 
 void debug_inspect_memory(FILE *stream)
 {
@@ -179,7 +212,7 @@ void debug_free(void *ptr, uint32 line, char *file, char *var_name)
 }
 
 /* print all unfreed pointers */
-void *find_leaks(FILE *stream)
+void find_leaks(FILE *stream)
 {
     int i;
     for (i = 0; i < vec_size_Vec_Mem(&debug_vec); i++)

@@ -23,28 +23,38 @@ DWORD WINAPI allocateMemory(LPVOID param) {
 }
 
 
+Comparison MyCompareObjectHandles(HANDLE const * hFirst, HANDLE const * hSecond) {
+    return (hFirst == hSecond) ? EQUAL : LESS;
+}
+
+DEFINE_VEC(HANDLE, Vec_Thread, MyCompareObjectHandles);
+
 int main() {
     // Create an array of thread handles
-    HANDLE threads[NUM_THREADS];
+    //HANDLE threads[NUM_THREADS];
 
+    Vec_Thread vec;
+    CREATE_VEC(&vec,MyCompareObjectHandles,HANDLE,Vec_Thread);
     // Create the threads
     for (int i = 0; i < NUM_THREADS; i++) {
-        threads[i] = CreateThread(NULL, 0, allocateMemory, NULL, 0, NULL);
-        if (threads[i] == NULL) {
-            printf("Failed to create thread\n");
-            return 1;
-        }
-    
-    BOOL b = CompareObjectHandles(threads[NUM_THREADS-1],threads[NUM_THREADS-2]);
-
+        //threads[i] = CreateThread(NULL, 0, allocateMemory, NULL, 0, NULL);
+        //if (threads[i] == NULL) {
+        //    printf("Failed to create thread\n");
+        //    return 1;
+        //}
+        vec.push_back(&vec,CreateThread(NULL, 0, allocateMemory, NULL, 0, NULL));
+    }
     // Wait for all threads to finish
     for (int i = 0; i < NUM_THREADS; i++) {
-        WaitForSingleObject(threads[i], INFINITE);
+        //WaitForSingleObject(threads[i], INFINITE);
+        WaitForSingleObject(*unpack_HANDLE(vec.at(&vec,i)), INFINITE);
     }
+    MEM_DEBUG_INSPECT(stderr);
 
     // Clean up
     for (int i = 0; i < NUM_THREADS; i++) {
-        CloseHandle(threads[i]);
+        //CloseHandle(threads[i]);
+        CloseHandle(*(vec.at(&vec,i).data));
     }
 
     // Check for memory leaks
