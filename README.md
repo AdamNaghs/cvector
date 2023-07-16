@@ -124,9 +124,9 @@ As opposed to
  4. Clear removes all the data but leaves the capcity the same.
  5. You should not alter the size, capacity, or data, let the vec do it!
  6. When reading the code, if you find a function with a comment indicating it is internal, do not call it
- 7. you can forget about most of the error handling and worry about it when it comes up
+ 7. You can forget about most of the error handling and worry about it when it comes up
 	by using unpack_##type, ASSERT_ON_ERROR, and RETURN_ON_ERROR
- 8. if youre using the memory debugger and a vec, change you init method to the CREATE_VEC macro,
+ 8. If youre using the memory debugger and a vec, change you init method to the CREATE_VEC macro,
 	this macro takes many args but ensures the __LINE__ & __FILE__ macros work as expected.
- 9. if you prefer not to use the object oriented way of using this struct you can call the function it defines
+ 9. If you prefer not to use the object oriented way of using this struct you can call the function it defines
 	and links as function ptrs. However the object oriented method provides the ability to easily change the type of your Vec
