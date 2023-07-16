@@ -4,7 +4,13 @@
 #include "util.h"
 #include "vec.h"
 
-/* simple single threaded memory debugger */
+/*
+    Memory debugger
+    Works for Windows Threads, may not work for mutex locks.
+    Untested for POSIX Threads.
+
+    Not meant to free thread/handles only the memory allocated on them.
+*/
 
 /* set to 1 to enable memory replacement macros */
 #define DEBUG_MEM 1
@@ -32,6 +38,7 @@
 
 /* Implementation below */
 
+/* if a ptr is realloced we set the name to the ptrs name */
 typedef struct
 {
     bool known;
@@ -60,7 +67,8 @@ Comparison debug_data_cmp(const Debug_Data *a, const Debug_Data *b)
 
 /* define Vec_Mem*/
 DEFINE_VEC(Debug_Data, Vec_Mem, debug_data_cmp);
-/* define external variable (initialized with MEM_DEBUG_INIT) */
+
+/* define static variable (initialized with MEM_DEBUG_INIT) */
 
 static Vec_Mem debug_vec =
     {
@@ -109,7 +117,7 @@ void *debug_malloc(size_t size, uint32 line, char *file, char *resize_statement)
 }
 
 /*
-    the ptr we get in realloc should be the same we gave in malloc
+    The ptr we get in realloc should be the same we gave in malloc
     but we will give a new ptr back and just update the debug_data and not
     the line or file so we know where it came from
     Increment the realloc count
@@ -146,7 +154,6 @@ void *debug_calloc(size_t num, size_t size, uint32 line, char *file, char *resiz
     return ptr;
 }
 
-
 /* should update to check if you incremented the ptr and tried to free that ptr instead of the original head */
 /* freak out if we try to free data not in the Vec */
 void debug_free(void *ptr, uint32 line, char *file, char *var_name)
@@ -172,7 +179,7 @@ void debug_free(void *ptr, uint32 line, char *file, char *var_name)
 }
 
 /* print all unfreed pointers */
-void *find_leaks(FILE* stream)
+void *find_leaks(FILE *stream)
 {
     int i;
     for (i = 0; i < vec_size_Vec_Mem(&debug_vec); i++)
@@ -181,7 +188,7 @@ void *find_leaks(FILE* stream)
         Debug_Data *d = unpack_Debug_Data(vec_at_Vec_Mem(&debug_vec, i));
         if (d->alias.known)
             n = d->alias.name;
-        fprintf(stream, RED "Pointer '%s' at address %p not freed." WHT " Allocated on line %d in file %s.\n" RESET,
+        fprintf(stream, RED "Pointer '%s' at address %p not freed." WHT " Allocated on " YEL "line %d" WHT " in" YEL " file %s.\n" RESET,
                 n, d->data, d->line, d->file);
         free(d->data);
     }
@@ -191,7 +198,6 @@ void *find_leaks(FILE* stream)
     else
         fprintf(stream, RED "Found & Patched %d leaks.\n" RESET, i);
 }
-
 
 #if DEBUG_MEM == 1
 /* DEBUG MALLOC */

@@ -83,7 +83,7 @@ Otherwise you'll be told your Vec was allocated wherever you defined it with DEF
 	} Vec_Error;
 
  # Comparisons
- There is no way for me to know if some unique data type is equal so I leave it to a function pointer which reaturns
+ There is no way for me to know if some unique data type is equal so I leave it to a function pointer which returns
  a Comparison or -1 for LESS, 0 for EQUAL, 1 for GREATER
  
 	 typedef enum
