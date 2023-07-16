@@ -89,7 +89,9 @@ void print_char_x_times(FILE *stream, char ch, int num)
     }
 }
 
-
+/*
+    Very finiky function. DO NOT ALTER.
+*/
 void debug_print_table(FILE *stream, uint32_t line, char* file)
 {
     size_t i;
