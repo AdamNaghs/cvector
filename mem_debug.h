@@ -16,7 +16,7 @@
 #define DEBUG_MEM 1
 
 /* set to 1 to enable printing when there are no errors */
-#define PRINT_ALL 1
+#define PRINT_ALL 0
 
 /*
    Use these twp macros to run the memory debugger

@@ -20,14 +20,7 @@ DWORD WINAPI allocateMemory(LPVOID param) {
     }
     return 0;
 }
-Comparison Compare_Threads(const HANDLE thread0,const HANDLE thread1) {
-    HANDLE t0 = thread0;
-    HANDLE t1 = thread1;
-    if (CompareObjectHandles(t0,t1) == TRUE) return EQUAL;
-    return LESS;
-};
 
-DEFINE_VEC(HANDLE, Vec_Tread,Compare_Threads);
 
 int main() {
     // Create an array of thread handles
