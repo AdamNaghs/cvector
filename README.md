@@ -94,7 +94,7 @@ Otherwise you'll be told your Vec was allocated wherever you defined it with DEF
 	} Comparison;
 	/* 
 		input of compare func must be: 
-		(const type *, const type *) 
+		(const type *, const type *)  
 	*/
 
 I've written compare_ints and compare_floats functions and in the stdlib you can use strcmp to compare strings.
