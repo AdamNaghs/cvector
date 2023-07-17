@@ -107,6 +107,8 @@ If you have data that needs a function to be ran on it before freeing you can sp
 The Vec has a func ptr named free_obj you can assign to free your object.
 
     Vec_Thread vec = create_Vec_Thread();
+    vec.free_obj = CloseHandle;
+
     /* Create the threads */
     for (int i = 0; i < NUM_THREADS; i++)
     {
@@ -117,10 +119,7 @@ The Vec has a func ptr named free_obj you can assign to free your object.
     {
         WaitForSingleObject(*unpack_HANDLE(vec.at(&vec, i)), INFINITE);
     }
-    MEM_DEBUG_INSPECT(stderr);
-
-    // Clean up
-    vec.free_obj = CloseHandle;
+    /* Clean up */
     vec.free(&vec);
 
 # Functions
