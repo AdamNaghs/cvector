@@ -1,6 +1,5 @@
 #ifndef MEM_DEBUG_H
 #define MEM_DEBUG_H
-#include "colored_assert.h"
 #include "util.h"
 #include "vec.h"
 
