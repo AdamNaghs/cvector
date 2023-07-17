@@ -106,21 +106,39 @@ You can use the comparison func to ensure you can use sorting algos on the struc
 If you have data that needs a function to be ran on it before freeing you can specify a function to free with.
 The Vec has a func ptr named free_obj you can assign to free your object.
 
-    Vec_Thread vec = create_Vec_Thread();
-    vec.free_obj = CloseHandle;
+Example using threads:
 
-    /* Create the threads */
-    for (int i = 0; i < NUM_THREADS; i++)
-    {
-        vec.push_back(&vec, CreateThread(NULL, 0, allocateMemory, NULL, 0, NULL));
-    }
-    /* Wait for all threads to finish */
-    for (int i = 0; i < NUM_THREADS; i++)
-    {
-        WaitForSingleObject(*unpack_HANDLE(vec.at(&vec, i)), INFINITE);
-    }
-    /* Clean up */
-    vec.free(&vec);
+    #include <windows.h>
+	#include <stdio.h>
+
+	#define NUM_THREADS 5
+
+	Comparison MyCompareObjectHandles(HANDLE const *hFirst, HANDLE const *hSecond)
+	{
+    	return (hFirst == hSecond) ? EQUAL : LESS;
+	}
+	DEFINE_VEC(HANDLE, Vec_Thread, MyCompareObjectHandles);
+	int main()
+	{
+
+		Vec_Thread vec = create_Vec_Thread();
+		vec.free_obj = CloseHandle;
+
+		/* Create the threads */
+		for (int i = 0; i < NUM_THREADS; i++)
+		{
+			vec.push_back(&vec, CreateThread(NULL, 0, some_func, NULL, 0, NULL));
+		}
+		/* Wait for all threads to finish */
+		for (int i = 0; i < NUM_THREADS; i++)
+		{
+			WaitForSingleObject(*unpack_HANDLE(vec.at(&vec, i)), INFINITE);
+		}
+		/* Clean up */
+		vec.free(&vec);
+	   return 0;
+	}
+
 
 # Functions
 This struct simulates a class using function pointers but you still need to pass self back into the function.
