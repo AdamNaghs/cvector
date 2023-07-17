@@ -43,11 +43,12 @@ get an error and follow the error tree in stderr.
  You can call create_name to safely make a vector if you want to set it equal to a vector.
  ex: 
  
-	 Vec_Int v = create_Vec_Int();
+	/* Pass NULL If you dont need a function to free your data */
+	 Vec_Int v = create_Vec_Int(NULL); 
  as opposed to
  
 	 Vec_Int v;
-	 Vec_Int_init(v);
+	 Vec_Int_init(&v,NULL);
 The naming of the init is purposfully backward to ensure differentiation between create and init.
 
 If you're debugging memory use CREATE_VEC to ensure __LINE__ & __FILE__ 
@@ -56,6 +57,8 @@ Otherwise you'll be told your Vec was allocated wherever you defined it with DEF
 
 	Vec_Int v ;
  	CREATE_VEC(&v,compare_ints,int,Vec_Int);
+	/* If you wanted to specify a free_func this way you must assign the variable */
+	v.free_obj = func;
 
  
   
@@ -106,6 +109,8 @@ You can use the comparison func to ensure you can use sorting algos on the struc
 If you have data that needs a function to be ran on it before freeing you can specify a function to free with.
 The Vec has a func ptr named free_obj you can assign to free your object.
 
+Freeing a vector and then attempting to use it without reinitilizing will likely cause a VEC ALLOC ERROR.
+
 Example using threads:
 
     #include <windows.h>
@@ -120,14 +125,11 @@ Example using threads:
 	DEFINE_VEC(HANDLE, Threads, MyCompareObjectHandles);
 	int main()
 	{
-		/* init vec */
-		Threads vec = create_Threads();
-		vec.free_obj = CloseHandle;
-
+		Threads vec = create_Threads((void(*)(void*))CloseHandle); /* cast to avoid warning */
 		/* Create the threads */
 		for (int i = 0; i < NUM_THREADS; i++)
-		{
-			vec.push_back(&vec, CreateThread(NULL, 0, some_func, NULL, 0, NULL));
+		{*
+			vec.push_back(&vec, CreateThread(NULL, 0, allocateMemory, NULL, 0, NULL));
 		}
 		/* Wait for all threads to finish */
 		for (int i = 0; i < NUM_THREADS; i++)
@@ -135,7 +137,7 @@ Example using threads:
 			WaitForSingleObject(*unpack_HANDLE(vec.at(&vec, i)), INFINITE);
 		}
 		/* Clean up */
-		vec.free(&vec);
+		vec.free(&vec); /* Calls CloseHandle on all threads and frees vec */
 	    return 0;
 	}
 
@@ -153,6 +155,26 @@ As opposed to
 
 	Return_int x = v.at(&v,1);
 	int* x_val = unpack_int(x); 
+Here is a list of the member functions in the struct:
+
+	Function Pointers:                                                                                            
+	{                                                                                                        
+		void (*free_obj)(type value);                                                                      
+		Vec_Compare_Func_##type(compare_vals);                                                             
+		bool (*empty)(name * this);                                                                             
+		size_t (*read_size)(name * this);                                                                       
+		size_t (*read_capacity)(name * this);                                                                   
+		Vec_Error (*free)(name * this);                                                                         
+		Vec_Error (*clear)(name * this);                                                                        
+		Vec_Error (*compact)(name * this);                                                                      
+		Vec_Error (*remove)(name * this, size_t index);                                                         
+		Vec_Error (*realloc)(name * this, size_t capacity);                                                     
+		Vec_Error (*push_back)(name * this, type value);                                                        
+		Vec_Error (*insert)(name * this, size_t index, type value);                                             
+		Vec_Error (*swap)(name * this, size_t index0, size_t index1);                                           
+		Return_##type (*find)(name * this, type value);                                                         
+		Return_##type (*at)(name * this, size_t index);                                                         
+	}; 
 
 
 # Behavior of Note: 

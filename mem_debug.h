@@ -82,7 +82,8 @@ static Vec_Mem debug_vec =
 
 void print_char_x_times(FILE *stream, char ch, int num)
 {
-    for (int i = 0; i < num; i++)
+    int i;
+    for (i = 0; i < num; i++)
     {
         fputc(ch, stream);
     }
@@ -95,7 +96,7 @@ void debug_print_table(FILE *stream, uint32_t line, char *file)
     size_t size = vec_size_Vec_Mem(&debug_vec);
     assert(size != SIZE_MAX);
 
-    // Print table header
+    /* Print table header */
     fprintf(stream, MAG "Beginning Memory Inspection: " YEL "line %d" WHT " in" YEL " file %s \n", line, file);
     fprintf(stream, "%s| %16s | %15s | %13s | %15s | %s |\n", MAG, "Pointer Address", "Alloc Line", "Realloc Count", "Data Size (Bytes)", "File");
 
@@ -107,7 +108,7 @@ void debug_print_table(FILE *stream, uint32_t line, char *file)
         char *color = PICK_COLOR;
         Debug_Data *d = unpack_Debug_Data(vec_at_Vec_Mem(&debug_vec, i));
         fprintf(stream, "%s| %p | %15d | %13d | %15lu | %s |\n" RESET,
-                color, d->data, d->line, d->realloc_count, d->size_bytes, d->file);
+                color, d->data, d->line, d->realloc_count, (unsigned long)d->size_bytes, d->file);
     }
 
     fprintf(stream, "%s", PICK_COLOR);
@@ -129,12 +130,6 @@ void debug_inspect_memory(FILE *stream)
                 color, d->data, d->file, d->line, d->realloc_count);
     }
     fprintf(stream, "%sEnd of Memory Inspection.\n" RESET, PICK_COLOR);
-}
-
-void init_leak_finder(void)
-{
-    fprintf(stderr, GRN "Beginning Memory Debug.\n" RESET);
-    debug_vec = create_Vec_Mem();
 }
 
 /* malloc acts as a constructor for Debug_Data */
@@ -205,8 +200,8 @@ void debug_free(void *ptr, uint32 line, char *file, char *var_name)
     }
     if (ret.err != VEC_OK)
         return;
-    Debug_Data *found = unpack_Debug_Data(ret);
 #if PRINT_ALL
+    Debug_Data *found = unpack_Debug_Data(ret);
     fprintf(stderr,
             GRN "debug_free freeing variable on (line %d, file %s) from (line %d, file %s). Pointer %p was resized %d times.\n" RESET,
             line, file, found->line, found->file, var_name, found->realloc_count);

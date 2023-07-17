@@ -15,8 +15,7 @@ void alloc_test(uint8 depth)
 int main()
 {
 
-    Vec_Int v;
-    Vec_Int_init(&v);//CREATE_VEC(&v, compare_ints, int, Vec_Int);
+    Vec_Int v = create_Vec_Int(NULL);//CREATE_VEC(&v, compare_ints, int, Vec_Int);
     //Vec_Int_init(&v,compare_ints);
     v.push_back(&v,1);
 
