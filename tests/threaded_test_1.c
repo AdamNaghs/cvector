@@ -33,10 +33,6 @@ DEFINE_VEC(HANDLE, Vec_Thread, MyCompareObjectHandles);
 
 int main()
 {
-    // Create an array of thread handles
-    // HANDLE threads[NUM_THREADS];
-    // CREATE_VEC(&vec,MyCompareObjectHandles,HANDLE,Vec_Thread);
-
     Vec_Thread vec = create_Vec_Thread();
     // Create the threads
     for (int i = 0; i < NUM_THREADS; i++)
