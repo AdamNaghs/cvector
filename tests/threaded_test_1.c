@@ -60,5 +60,7 @@ int main() {
     // Check for memory leaks
     MEM_DEBUG_END(stderr);
 
+    MEM_DEBUG_INSPECT(stderr);
+
     return 0;
 }

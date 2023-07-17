@@ -89,9 +89,7 @@ void print_char_x_times(FILE *stream, char ch, int num)
     }
 }
 
-/*
-    Very finiky function. DO NOT ALTER.
-*/
+#define BAR_LENGTH 159
 void debug_print_table(FILE *stream, uint32_t line, char* file)
 {
     size_t i;
@@ -100,11 +98,9 @@ void debug_print_table(FILE *stream, uint32_t line, char* file)
 
     // Print table header
     fprintf(stream, MAG"Beginning Memory Inspection: " YEL "line %d"WHT" in" YEL " file %s \n", line, file);
-    fprintf(stream, "%s| %s | %15s | %13s | %15s | %s |\n", MAG, "Pointer Address", "Alloc Line", "Realloc Count", "Data Size (Bytes)", "File");
+    fprintf(stream, "%s| %16s | %15s | %13s | %15s | %s |\n", MAG, "Pointer Address", "Alloc Line", "Realloc Count", "Data Size (Bytes)", "File");
     
-    const uint8_t padding = 40;
-    const uint8_t bar_length = 16 + 15 + 13 + 15 + 100 + padding;
-    print_char_x_times(stream, '-', bar_length);
+    print_char_x_times(stream, '-', BAR_LENGTH);
     fprintf(stream, "%s\n", MAG);
 
     for (i = 0; i < size; i++)
@@ -116,7 +112,7 @@ void debug_print_table(FILE *stream, uint32_t line, char* file)
     }
 
     fprintf(stream, "%s", PICK_COLOR);
-    print_char_x_times(stream, '-', bar_length);
+    print_char_x_times(stream, '-', BAR_LENGTH);
     fprintf(stream, "\nEnd of Memory Inspection: " YEL "line %d"WHT" in" YEL " file %s \n", line, file);
 }
 
