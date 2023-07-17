@@ -35,7 +35,7 @@
     Print info of all pointers currently allocated
     File Name must be less than 100 chars long
 */
-#define MEM_DEBUG_INSPECT(stream) (debug_print_table(stream,__LINE__,__FILE__))
+#define MEM_DEBUG_INSPECT(stream) (debug_print_table(stream, __LINE__, __FILE__))
 
 /* Implementation below */
 
@@ -90,16 +90,16 @@ void print_char_x_times(FILE *stream, char ch, int num)
 }
 
 #define BAR_LENGTH 159
-void debug_print_table(FILE *stream, uint32_t line, char* file)
+void debug_print_table(FILE *stream, uint32_t line, char *file)
 {
     size_t i;
     size_t size = vec_size_Vec_Mem(&debug_vec);
     assert(size != SIZE_MAX);
 
     // Print table header
-    fprintf(stream, MAG"Beginning Memory Inspection: " YEL "line %d"WHT" in" YEL " file %s \n", line, file);
+    fprintf(stream, MAG "Beginning Memory Inspection: " YEL "line %d" WHT " in" YEL " file %s \n", line, file);
     fprintf(stream, "%s| %16s | %15s | %13s | %15s | %s |\n", MAG, "Pointer Address", "Alloc Line", "Realloc Count", "Data Size (Bytes)", "File");
-    
+
     print_char_x_times(stream, '-', BAR_LENGTH);
     fprintf(stream, "%s\n", MAG);
 
@@ -113,9 +113,8 @@ void debug_print_table(FILE *stream, uint32_t line, char* file)
 
     fprintf(stream, "%s", PICK_COLOR);
     print_char_x_times(stream, '-', BAR_LENGTH);
-    fprintf(stream, "\nEnd of Memory Inspection: " YEL "line %d"WHT" in" YEL " file %s \n", line, file);
+    fprintf(stream, "\nEnd of Memory Inspection: " YEL "line %d" WHT " in" YEL " file %s \n", line, file);
 }
-
 
 void debug_inspect_memory(FILE *stream)
 {

@@ -246,7 +246,11 @@ typedef enum
 	Vec_Error vec_free_##name(name *v)                                                                     \
 	{                                                                                                      \
 		RETURN_IF_NULL(v, "free_" #name, VEC_GIVEN_NULL_ERROR);                                            \
-		vec_clear_##name(v);                                                                               \
+		if (v->free_obj != NULL)                                                                           \
+			for (size_t i = 0; i < ((v->size) - 1); i++)                                                   \
+			{                                                                                              \
+				internal_free_obj_##name(v, ((v->data)[i]));                                               \
+			}                                                                                              \
 		free((v->data));                                                                                   \
 		(v->data) = NULL;                                                                                  \
 		(v->size) = 0;                                                                                     \
