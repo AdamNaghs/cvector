@@ -1,5 +1,5 @@
 #ifndef VEC_H
-#define VEC_H /* 7/16/23 By Adam Naghavi*/
+#define VEC_H /* 7/17/23 By Adam Naghavi*/
 
 #include <stdbool.h>
 #include <stdlib.h>
