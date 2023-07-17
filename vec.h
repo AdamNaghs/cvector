@@ -119,7 +119,7 @@ typedef enum
 		}                                                                  \
 	} while (0)
 
-#define DEFINE_RETURN_TYPE(type)                                           \
+#define DEFINE_RETURN_TYPE(type)                                                \
 	typedef struct Return_##type Return_##type;                                 \
                                                                                 \
 	struct Return_##type                                                        \
@@ -144,7 +144,7 @@ typedef enum
 
 /* define implementation */
 #define DEFINE_VEC(type, name, compare_func)                                                               \
-	DEFINE_RETURN_TYPE(type);                                                                         \
+	DEFINE_RETURN_TYPE(type);                                                                              \
 	typedef struct name name;                                                                              \
 	typedef Comparison (*Vec_Compare_Func_##type)(const type *, const type *);                             \
                                                                                                            \
@@ -167,6 +167,7 @@ typedef enum
 		Vec_Error (*swap)(name *, size_t index0, size_t index1);                                           \
 		Return_##type (*find)(name *, type value);                                                         \
 		Return_##type (*at)(name *, size_t index);                                                         \
+		void (*free_obj)(type value);                                                                      \
 	};                                                                                                     \
                                                                                                            \
 	Vec_Error vec_realloc_##name(name *name##_v, size_t name##_capacity)                                   \
@@ -208,18 +209,11 @@ typedef enum
 		}                                                                                                  \
 		return VEC_OK;                                                                                     \
 	}                                                                                                      \
-                                                                                                           \
-	Vec_Error vec_swap_##name(name *v, size_t index0, size_t index1)                                       \
+	/* internal free obj method */                                                                         \
+	void internal_free_obj_##name(name *v, type value)                                                     \
 	{                                                                                                      \
-		RETURN_IF_NULL(v, "swap", VEC_GIVEN_NULL_ERROR);                                                   \
-		Vec_Error oob0 = internal_oob_check_##name(v, index0);                                             \
-		RETURN_ON_ERROR(oob0, "swap_" #type " (index0)");                                                  \
-		Vec_Error oob1 = internal_oob_check_##name(v, index1);                                             \
-		RETURN_ON_ERROR(oob1, "swap_" #type " (index1)");                                                  \
-		type tmp = (v->data)[index0];                                                                      \
-		(v->data)[index0] = (v->data)[index1];                                                             \
-		(v->data)[index1] = tmp;                                                                           \
-		return VEC_OK;                                                                                     \
+		if (v->free_obj != NULL)                                                                           \
+			(v->free_obj)(value);                                                                          \
 	}                                                                                                      \
                                                                                                            \
 	Vec_Error vec_clear_##name(name *v)                                                                    \
@@ -227,7 +221,8 @@ typedef enum
 		RETURN_IF_NULL(v, "clear_" #name, VEC_GIVEN_NULL_ERROR);                                           \
 		for (size_t i = 0; i < (v->size); i++)                                                             \
 		{                                                                                                  \
-			memcpy((&((v->data)[i])), 0, sizeof((v->data)[i]));                                            \
+			internal_free_obj_##name(v, ((v->data)[i]));                                                   \
+			memset(&((v->data)[i]), 0, sizeof((v->data)[i]));                                              \
 		}                                                                                                  \
 		(v->size) = 0;                                                                                     \
 		return VEC_OK;                                                                                     \
@@ -239,6 +234,7 @@ typedef enum
 		RETURN_ON_ERROR(internal_oob_check_##name(v, index), "remove_" #type " (oob check index)_" #name); \
 		for (size_t i = index; i < ((v->size) - 1); i++)                                                   \
 		{                                                                                                  \
+			internal_free_obj_##name(v, ((v->data)[i]));                                                   \
 			(v->data)[i] = (v->data)[i + 1];                                                               \
 		}                                                                                                  \
 		(v->size)--;                                                                                       \
@@ -250,10 +246,24 @@ typedef enum
 	Vec_Error vec_free_##name(name *v)                                                                     \
 	{                                                                                                      \
 		RETURN_IF_NULL(v, "free_" #name, VEC_GIVEN_NULL_ERROR);                                            \
+		vec_clear_##name(v);                                                                               \
 		free((v->data));                                                                                   \
 		(v->data) = NULL;                                                                                  \
 		(v->size) = 0;                                                                                     \
 		(v->capacity) = 0;                                                                                 \
+		return VEC_OK;                                                                                     \
+	}                                                                                                      \
+                                                                                                           \
+	Vec_Error vec_swap_##name(name *v, size_t index0, size_t index1)                                       \
+	{                                                                                                      \
+		RETURN_IF_NULL(v, "swap", VEC_GIVEN_NULL_ERROR);                                                   \
+		Vec_Error oob0 = internal_oob_check_##name(v, index0);                                             \
+		RETURN_ON_ERROR(oob0, "swap_" #type " (index0)");                                                  \
+		Vec_Error oob1 = internal_oob_check_##name(v, index1);                                             \
+		RETURN_ON_ERROR(oob1, "swap_" #type " (index1)");                                                  \
+		type tmp = (v->data)[index0];                                                                      \
+		(v->data)[index0] = (v->data)[index1];                                                             \
+		(v->data)[index1] = tmp;                                                                           \
 		return VEC_OK;                                                                                     \
 	}                                                                                                      \
                                                                                                            \
@@ -334,6 +344,9 @@ typedef enum
 	Vec_Error name##_init(name *v)                                                                         \
 	{                                                                                                      \
 		CREATE_VEC(v, compare_func, type, name);                                                           \
+		if (v->data == NULL)                                                                               \
+			return VEC_ALLOC_ERROR;                                                                        \
+		return VEC_OK;                                                                                     \
 	}                                                                                                      \
                                                                                                            \
 	name create_##name(void)                                                                               \
@@ -373,6 +386,7 @@ typedef enum
 		((v)->find) = vec_find_##name;                                     \
 		((v)->at) = vec_at_##name;                                         \
 		((v)->insert) = vec_insert_##name;                                 \
+		((v)->free_obj) = NULL;                                            \
 	} while (0)
 
 #endif /*VEC_H*/

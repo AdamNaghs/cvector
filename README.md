@@ -102,6 +102,27 @@ Any other types need their own compare method to be written and passed as an arg
 The only method which uses the comparison func is find and it only uses the EQUAL.
 You can use the comparison func to ensure you can use sorting algos on the struct.
 
+# Freeing
+If you have data that needs a function to be ran on it before freeing you can specify a function to free with.
+The Vec has a func ptr named free_obj you can assign to free your object.
+
+    Vec_Thread vec = create_Vec_Thread();
+    /* Create the threads */
+    for (int i = 0; i < NUM_THREADS; i++)
+    {
+        vec.push_back(&vec, CreateThread(NULL, 0, allocateMemory, NULL, 0, NULL));
+    }
+    /* Wait for all threads to finish */
+    for (int i = 0; i < NUM_THREADS; i++)
+    {
+        WaitForSingleObject(*unpack_HANDLE(vec.at(&vec, i)), INFINITE);
+    }
+    MEM_DEBUG_INSPECT(stderr);
+
+    // Clean up
+    vec.free_obj = CloseHandle;
+    vec.free(&vec);
+
 # Functions
 This struct simulates a class using function pointers but you still need to pass self back into the function.
 You can forego this fascade and just call the mangled functions that are defined by DEFINE_VEC
