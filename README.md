@@ -109,7 +109,9 @@ You can use the comparison func to ensure you can use sorting algos on the struc
 If you have data that needs a function to be ran on it before freeing you can specify a function to free with.
 The Vec has a func ptr named free_obj you can assign to free your object.
 
-Freeing a vector and then attempting to use it without reinitilizing will likely cause a VEC ALLOC ERROR.
+After freeing a Vec it is ready to be used again.
+Freeing frees all dynamic memory and sets the size and capacity to 0.
+Clearing leaves the capacity but reduces the size to 0.
 
 Example using threads:
 

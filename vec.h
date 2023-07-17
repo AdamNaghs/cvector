@@ -233,10 +233,10 @@ typedef enum
 	{                                                                                                      \
 		RETURN_IF_NULL(v, "remove_" #type, VEC_GIVEN_NULL_ERROR);                                          \
 		RETURN_ON_ERROR(internal_oob_check_##name(v, index), "remove_" #type " (oob check index)_" #name); \
+		internal_free_obj_##name(v, ((v->data)[index]));                                                   \
 		size_t i;                                                                                          \
 		for (i = index; i < ((v->size) - 1); i++)                                                          \
 		{                                                                                                  \
-			internal_free_obj_##name(v, ((v->data)[i]));                                                   \
 			(v->data)[i] = (v->data)[i + 1];                                                               \
 		}                                                                                                  \
 		(v->size)--;                                                                                       \

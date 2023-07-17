@@ -51,9 +51,11 @@ int main()
     /* Clean up */
     (vec.free)(&vec);
     /* Check for memory leaks */
+
+    int *j = malloc(sizeof(int));
+
     MEM_DEBUG_END(stderr);
-
+    
     MEM_DEBUG_INSPECT(stderr);
-
     return 0;
 }

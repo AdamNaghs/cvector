@@ -9,6 +9,8 @@
     Untested for POSIX Threads.
 
     Not meant to free thread/handles only the memory allocated on them.
+
+    Only works for memory manipulated with malloc, calloc, realloc, and free.
 */
 
 /* set to 1 to enable memory replacement macros */
@@ -26,7 +28,7 @@
     MUST BE PLACED AT ABSOLUTE END OF MAIN FUNCTION!
     (Immediatley before returning)
     End mem debugging and print all unfreed pointers.
-    Will also free all unfreed memory.
+    Will also free/dump all unfreed memory.
 */
 #define MEM_DEBUG_END(stream) (find_leaks(stream))
 
@@ -34,7 +36,7 @@
     Print info of all pointers currently allocated
     File Name must be less than 100 chars long
 */
-#define MEM_DEBUG_INSPECT(stream) (debug_print_table(stream, __LINE__, __FILE__))
+#define MEM_DEBUG_INSPECT(stream) (debug_inspect_memory(stream, __LINE__, __FILE__))
 
 /* Implementation below */
 
@@ -56,6 +58,8 @@ typedef struct
     Name alias;
 } Debug_Data;
 
+void free_debug_data(Debug_Data d) { free(d.data); }
+
 Comparison debug_data_cmp(const Debug_Data *a, const Debug_Data *b)
 {
     if ((a->data == b->data) ||
@@ -76,7 +80,7 @@ static Vec_Mem debug_vec =
         .data = 0,
         .size = 0,
         .capacity = 0,
-};
+        .free_obj = free_debug_data};
 
 #define PICK_COLOR (i % 2 == 0 ? CYN : MAG)
 
@@ -90,7 +94,7 @@ void print_char_x_times(FILE *stream, char ch, int num)
 }
 
 #define BAR_LENGTH 159
-void debug_print_table(FILE *stream, uint32_t line, char *file)
+void debug_inspect_memory(FILE *stream, uint32_t line, char *file)
 {
     size_t i;
     size_t size = vec_size_Vec_Mem(&debug_vec);
@@ -116,7 +120,7 @@ void debug_print_table(FILE *stream, uint32_t line, char *file)
     fprintf(stream, "\nEnd of Memory Inspection: " YEL "line %d" WHT " in" YEL " file %s \n", line, file);
 }
 
-void debug_inspect_memory(FILE *stream)
+void debug_print_memory(FILE *stream)
 {
     size_t i;
     size_t size = vec_size_Vec_Mem(&debug_vec);
@@ -207,7 +211,6 @@ void debug_free(void *ptr, uint32 line, char *file, char *var_name)
             line, file, found->line, found->file, var_name, found->realloc_count);
 #endif
     ASSERT_ON_ERROR(vec_remove_Vec_Mem(&debug_vec, ret.index), "debug_free error freeing debug_vec, likely freed unallocated memory.");
-    free(ptr);
 }
 
 /* print all unfreed pointers */
@@ -222,7 +225,6 @@ void find_leaks(FILE *stream)
             n = d->alias.name;
         fprintf(stream, RED "Pointer '%s' at address %p not freed." WHT " Allocated on " YEL "line %d" WHT " in" YEL " file %s.\n" RESET,
                 n, d->data, d->line, d->file);
-        free(d->data);
     }
     vec_free_Vec_Mem(&debug_vec);
     if (i == 0)
