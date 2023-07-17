@@ -117,11 +117,11 @@ Example using threads:
 	{
     	return (hFirst == hSecond) ? EQUAL : LESS;
 	}
-	DEFINE_VEC(HANDLE, Vec_Thread, MyCompareObjectHandles);
+	DEFINE_VEC(HANDLE, Threads, MyCompareObjectHandles);
 	int main()
 	{
-
-		Vec_Thread vec = create_Vec_Thread();
+		/* init vec */
+		Threads vec = create_Threads();
 		vec.free_obj = CloseHandle;
 
 		/* Create the threads */

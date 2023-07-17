@@ -29,11 +29,11 @@ Comparison MyCompareObjectHandles(HANDLE const *hFirst, HANDLE const *hSecond)
     return (hFirst == hSecond) ? EQUAL : LESS;
 }
 
-DEFINE_VEC(HANDLE, Vec_Thread, MyCompareObjectHandles);
+DEFINE_VEC(HANDLE, Threads, MyCompareObjectHandles);
 
 int main()
 {
-    Vec_Thread vec = create_Vec_Thread();
+    Threads vec = create_Threads();
     // Create the threads
     for (int i = 0; i < NUM_THREADS; i++)
     {
