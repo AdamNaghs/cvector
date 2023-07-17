@@ -52,10 +52,7 @@ int main() {
     MEM_DEBUG_INSPECT(stderr);
 
     // Clean up
-    for (int i = 0; i < NUM_THREADS; i++) {
-        //CloseHandle(threads[i]);
-        CloseHandle(*(vec.at(&vec,i).data));
-    }
+    vec.free_obj = CloseHandle;
 
     // Check for memory leaks
     MEM_DEBUG_END(stderr);
