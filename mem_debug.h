@@ -17,8 +17,10 @@
 #define DEBUG_MEM 1
 
 /* set to 1 to enable printing when there are no errors */
-#define PRINT_ALL 0
+#define DEBUG_MEM_PRINT_ALL 0
 
+/* set to 1 to enable */
+#define DEBUG_MEM_COLOR 1
 /*
    Use these twp macros to run the memory debugger
    You can ignore the rest of the file unless you are interest in implementation
@@ -93,6 +95,25 @@ void print_char_x_times(FILE *stream, char ch, int num)
     }
 }
 
+#if (DEBUG_MEM_COLOR == 0)
+#undef RED
+#define RED ""
+#undef GRN
+#define GRN ""
+#undef YEL
+#define YEL ""
+#undef BLU
+#define BLU ""
+#undef MAG
+#define MAG ""
+#undef CYN
+#define CYN ""
+#undef WHT
+#define WHT ""
+#undef RESET
+#define RESET ""
+#endif
+
 #define BAR_LENGTH 159
 void debug_inspect_memory(FILE *stream, uint32_t line, char *file)
 {
@@ -101,7 +122,7 @@ void debug_inspect_memory(FILE *stream, uint32_t line, char *file)
     assert(size != SIZE_MAX);
 
     /* Print table header */
-    fprintf(stream, MAG "Beginning Memory Inspection: " YEL "line %d" WHT " in" YEL " file %s \n", line, file);
+    fprintf(stream, MAG "Beginning Memory Inspection: " WHT "line: " YEL "%d" WHT ", file: " YEL "%s \n", line, file);
     fprintf(stream, "%s| %16s | %15s | %13s | %15s | %s |\n", MAG, "Pointer Address", "Alloc Line", "Realloc Count", "Data Size (Bytes)", "File");
 
     print_char_x_times(stream, '-', BAR_LENGTH);
@@ -117,7 +138,7 @@ void debug_inspect_memory(FILE *stream, uint32_t line, char *file)
 
     fprintf(stream, "%s", PICK_COLOR);
     print_char_x_times(stream, '-', BAR_LENGTH);
-    fprintf(stream, "\nEnd of Memory Inspection: " YEL "line %d" WHT " in" YEL " file %s \n", line, file);
+    fprintf(stream, "\nEnd of Memory Inspection: " WHT "line: " YEL "%d" WHT ", file: " YEL "%s \n" RESET, line, file);
 }
 
 void debug_print_memory(FILE *stream)
@@ -140,7 +161,7 @@ void debug_print_memory(FILE *stream)
 void *debug_malloc(size_t size, uint32 line, char *file, char *resize_statement)
 {
     void *ptr = malloc(size);
-#if PRINT_ALL
+#if DEBUG_MEM_PRINT_ALL
     fprintf(stderr,
             BLU "debug_malloc called on line %d, in file %s. Statement used to resize was (%s) is equal to %d bytes.\n" RESET,
             line, file, resize_statement, size);
@@ -162,7 +183,7 @@ void *debug_realloc(void *ptr, size_t size, uint32 line, char *file, char *resiz
     void *new_ptr = realloc(ptr, size);
     Debug_Data in = {ptr};
     Debug_Data *d = unpack_Debug_Data(vec_find_Vec_Mem(&debug_vec, in));
-#if PRINT_ALL
+#if DEBUG_MEM_PRINT_ALL
     fprintf(stderr,
             YEL "debug_realloc called on line %d, in file %s. Statement used to resize was (%s) is equal to %d bytes. Pointer named (%s) has been resized %d times.\n" RESET,
             line, file, resize_statement, size, name, d->realloc_count + 1);
@@ -179,7 +200,7 @@ void *debug_realloc(void *ptr, size_t size, uint32 line, char *file, char *resiz
 void *debug_calloc(size_t num, size_t size, uint32 line, char *file, char *resize_statement)
 {
     void *ptr = calloc(num, size);
-#if PRINT_ALL
+#if DEBUG_MEM_PRINT_ALL
     fprintf(stderr,
             YEL "debug_calloc called on line %d, in file %s. Statement used to resize was (%s) is equal to %d bytes.\n" RESET,
             line, file, resize_statement, size);
@@ -199,18 +220,18 @@ void debug_free(void *ptr, uint32 line, char *file, char *var_name)
     if (ret.err == VEC_CANT_FIND_ERROR)
     {
         fprintf(stderr,
-                RED "debug_free attempting to free non-dynamic/stack memory on (line %d, file %s). Variable named (%s)\n" RESET,
+                RED "debug_free attempting to free memory not allocated with malloc/realloc/calloc (iterated pointer/stack memory/custom malloc) on (line %d, file %s). Variable named (%s)\n" RESET,
                 line, file, var_name);
     }
     if (ret.err != VEC_OK)
         return;
-#if PRINT_ALL
+#if DEBUG_MEM_PRINT_ALL
     Debug_Data *found = unpack_Debug_Data(ret);
     fprintf(stderr,
             GRN "debug_free freeing variable on (line %d, file %s) from (line %d, file %s). Pointer %p was resized %d times.\n" RESET,
             line, file, found->line, found->file, var_name, found->realloc_count);
 #endif
-    ASSERT_ON_ERROR(vec_remove_Vec_Mem(&debug_vec, ret.index), "debug_free error freeing debug_vec, likely freed unallocated memory.");
+    ASSERT_ON_ERROR(vec_remove_Vec_Mem(&debug_vec, ret.index), "debug_free error freeing debug_vec, likely freed unallocated memory or iterated pointer.");
 }
 
 /* print all unfreed pointers */
@@ -223,7 +244,7 @@ void find_leaks(FILE *stream)
         Debug_Data *d = unpack_Debug_Data(vec_at_Vec_Mem(&debug_vec, i));
         if (d->alias.known)
             n = d->alias.name;
-        fprintf(stream, RED "Pointer '%s' at address %p not freed." WHT " Allocated on " YEL "line %d" WHT " in" YEL " file %s.\n" RESET,
+        fprintf(stream, RED "Pointer '%s' at address %p not freed." WHT " Allocated on " WHT "line: " YEL "%d" WHT ", file: " YEL "%s \n" RESET,
                 n, d->data, d->line, d->file);
     }
     vec_free_Vec_Mem(&debug_vec);
