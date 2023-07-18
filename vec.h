@@ -251,7 +251,7 @@ typedef enum
 		if (v->free_obj != NULL)                                                                           \
 		{                                                                                                  \
 			size_t i;                                                                                      \
-			for (i = 0; i < ((v->size) - 1); i++)                                                          \
+			for (i = 0; i < (v->size); i++)                                                                \
 			{                                                                                              \
 				internal_free_obj_##name(v, ((v->data)[i]));                                               \
 			}                                                                                              \

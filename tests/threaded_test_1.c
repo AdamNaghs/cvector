@@ -20,7 +20,7 @@ DWORD WINAPI allocateMemory(LPVOID param)
             return 1;
         }
         /* Uncomment the following line to fix the memory leak */
-        /* free(memory); */
+         free(memory); 
     }
     return 0;
 }
@@ -53,10 +53,10 @@ int main()
     /* Check for memory leaks */
 
     int *j;
-    realloc(j,sizeof(int));
+    /* realloc(j,sizeof(int)); */
 
-    MEM_DEBUG_END(stderr);
-    
     MEM_DEBUG_INSPECT(stderr);
+    
+    MEM_DEBUG_END(stderr);
     return 0;
 }

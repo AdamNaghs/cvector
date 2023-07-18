@@ -60,22 +60,32 @@ typedef struct
     size_t size_bytes;
 } Debug_Data;
 
-void free_debug_data(Debug_Data d) { free(d.data); }
+
 
 Comparison debug_data_cmp(const Debug_Data *a, const Debug_Data *b)
 {
     if ((a->data == b->data))
         return EQUAL;
-    if (a->line < b->line)
-        return LESS;
+    /*if (a->line < b->line)
+        return LESS;*/
     return GREATER;
 }
 
 /* define Vec_Mem */
 DEFINE_VEC(Debug_Data, Vec_Mem, debug_data_cmp);
 
-/* define static variable (initialized when including header) */
+static Vec_Mem debug_vec;
 
+
+void free_debug_data(Debug_Data d)
+{
+    if ((vec_find_Vec_Mem(&debug_vec, d)).err != VEC_OK)
+        return;
+    free(d.data);
+}
+
+
+/* define static variable (initialized when including header) */
 static Vec_Mem debug_vec =
     {
         .data = 0,
@@ -168,7 +178,7 @@ void *debug_malloc(size_t size, uint32 line, char *file, char *resize_statement)
     Name n = {.known = false, .name = "Lengthy_Placeholder"};
     Debug_Data d = {.data = ptr, .size_bytes = size, .file = file, .line = line, .realloc_count = 0, .alias = n};
     vec_push_back_Vec_Mem(&debug_vec, d);
-    return ptr;
+    return d.data;
 }
 
 /*
@@ -181,19 +191,21 @@ void *debug_realloc(void *ptr, size_t size, uint32 line, char *file, char *resiz
 {
     Debug_Data in = {.data = ptr};
     Return_Debug_Data ret = (vec_find_Vec_Mem(&debug_vec, in));
-    void *new_ptr = realloc(ptr, size);
-    if (ret.err == VEC_CANT_FIND_ERROR) {
-        assert(new_ptr != NULL);
+    if (ret.err == VEC_CANT_FIND_ERROR)
+    {
+        void *new_ptr = realloc(ptr, size);
+        /* assert(new_ptr != NULL); */
         Debug_Data new_data = {.data = new_ptr, .size_bytes = size, .file = file, .line = line, .realloc_count = 0, .alias = {.known = true, .name = name}};
-        vec_push_back_Vec_Mem(&debug_vec,new_data);
+        vec_push_back_Vec_Mem(&debug_vec, new_data);
 #if DEBUG_MEM_PRINT_ALL
-    fprintf(stderr,
-            YEL "debug_realloc called on line %d, in file %s. Statement used to resize was (%s) is equal to %d bytes. Pointer named (%s) has been resized %d times.\n" RESET,
-            line, file, resize_statement, size, name, new_data.realloc_count + 1);
+        fprintf(stderr,
+                YEL "debug_realloc called on line %d, in file %s. Statement used to resize was (%s) is equal to %d bytes. Pointer named (%s) has been resized %d times.\n" RESET,
+                line, file, resize_statement, size, name, new_data.realloc_count + 1);
 #endif
         return new_ptr;
     }
-    Debug_Data* d = unpack_Debug_Data(ret);
+    Debug_Data *d = unpack_Debug_Data(ret);
+    void *new_ptr = realloc(ptr, size);
     d->alias.name = name;
     d->alias.known = true;
     d->size_bytes = size;
