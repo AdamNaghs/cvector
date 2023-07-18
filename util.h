@@ -2,6 +2,7 @@
 #define UTIL_H
 
 #include <stdint.h>
+#include <assert.h>
 
 #define RED "\033[31m"
 #define GRN "\033[32m"
@@ -20,6 +21,35 @@ typedef int8_t int8;
 typedef int16_t int16;
 typedef int32_t int32;
 typedef int64_t int64;
+
+#ifndef ASSERT_PRINT
+#define ASSERT_PRINT(cond)                                           \
+  do                                                                 \
+  {                                                                  \
+    if (!(cond))                                                     \
+    {                                                                \
+      fprintf(stderr, RED "Assertion failed:  '%s'\n" RESET, #cond); \
+      assert(cond);                                                  \
+    }                                                                \
+    else                                                             \
+    {                                                                \
+      fprintf(stderr, GRN "Assertion passed:  '%s'\n" RESET, #cond); \
+      assert(cond);                                                  \
+    }                                                                \
+  } while (0)
+#endif
+#ifndef FPRINTF_ASSERT
+#define FPRINTF_ASSERT(stream, cond, fstring, ...)            \
+  do                                                          \
+  {                                                           \
+    if (!(cond))                                              \
+    {                                                         \
+      fprintf(stream, RED fstring RESET, #cond, __VA_ARGS__); \
+      assert(cond);                                           \
+    }                                                         \
+  } while (0)
+#endif
+
 
 /* fast square root*/
 float inv_sqrt(float number)

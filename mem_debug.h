@@ -8,7 +8,9 @@
     Works for Windows Threads, may not work for mutex locks.
     Untested for POSIX Threads.
 
-    Not meant to free thread/handles only the memory allocated on them.
+    Be very careful when using with threads.
+    Race condition could cause a memory leak where:
+    Two thread push to the back of the vector at the same time.
 
     Only works for memory manipulated with malloc, calloc, realloc, and free.
 */
@@ -79,8 +81,7 @@ static Vec_Mem debug_vec;
 
 void free_debug_data(Debug_Data d)
 {
-    if ((vec_find_Vec_Mem(&debug_vec, d)).err != VEC_OK)
-        return;
+    if ((vec_find_Vec_Mem(&debug_vec, d)).err != VEC_OK) return;
     free(d.data);
 }
 

@@ -2,10 +2,11 @@
 #include <stdio.h>
 #include "../mem_debug.h"
 
-// Thread function
+
 DWORD WINAPI allocateMemory(LPVOID param) {
-    for (int i = 0; i < 10; i++) {
-        // Allocate memory but do not free it
+    int i;
+    for (i = 0; i < 10; i++) {
+        
         char* memory = (char*) malloc(100);
         if (memory == NULL) {
             printf("Failed to allocate memory\n");
@@ -17,15 +18,15 @@ DWORD WINAPI allocateMemory(LPVOID param) {
 }
 
 int main() {
-    // Create two threads
+    
     HANDLE thread1 = CreateThread(NULL, 0, allocateMemory, NULL, 0, NULL);
     HANDLE thread2 = CreateThread(NULL, 0, allocateMemory, NULL, 0, NULL);
 
-    // Wait for both threads to finish
+    
     WaitForSingleObject(thread1, INFINITE);
     WaitForSingleObject(thread2, INFINITE);
 
-    // Clean up
+    
     CloseHandle(thread1);
     CloseHandle(thread2);
 

@@ -130,7 +130,7 @@ Example using threads:
 		Threads vec = create_Threads((void(*)(void*))CloseHandle); /* cast to avoid warning */
 		/* Create the threads */
 		for (int i = 0; i < NUM_THREADS; i++)
-		{*
+		{
 			vec.push_back(&vec, CreateThread(NULL, 0, allocateMemory, NULL, 0, NULL));
 		}
 		/* Wait for all threads to finish */
@@ -188,10 +188,11 @@ Here is a list of the member functions in the struct:
  6. When reading the code, if you find a function with a comment indicating it is internal, do not call it
  7. You can forget about most of the error handling and worry about it when it comes up
 	by using unpack_##type, ASSERT_ON_ERROR, and RETURN_ON_ERROR
- 8. If youre using the memory debugger and a vec, change you init method to the CREATE_VEC macro,
+ 8. If youre using the memory debugger and a vec, change your init method to the CREATE_VEC macro,
 	this macro takes many args but ensures the __LINE__ & __FILE__ macros work as expected.
  9. If you prefer not to use the object oriented way of using this struct you can call the function it defines
 	and links as function ptrs. However the object oriented method provides the ability to easily change the type of your Vec
+ 10. Vec is not inherantly thread safe, that alone would have doubled the code base to control versioning. You must use your own mutexs or semaphores around each function call.
 
 # Type specific implementation
 If you want to alter the Vec's implementation for a specific type: 
@@ -202,3 +203,13 @@ The only time you would need to do this is if you want to free your structs usin
 Ex: closing windows thread handles needs CloseHandle(threads[i]).
 
 This can be avoided by writing a function to do your specific clearing/removing.
+
+
+# Why did you make this? C++ already has a vector!
+I wanted to stick to C and try to challenge myself to create a general vector.
+Arrays are great but often you do not know how much data you need to store and its annoying rewritting a dynamic array for every data type I need. So writting a macro to do it all for me seemed like a no brainer. This was my first time using a macro to create an object for me so if you have any advice on how I did please let me know I would be interested to hear.
+
+I decided to keep the complexity low and leave functions like pop out because you can recreate the functionality with two calls.
+After testing the vector I decided a fun application would be a memory debugger. That debugger is included and allows the user to inspect their memory and detect and patch memory leaks.
+
+If I had to rewrite this I'd probably lose the function pointers and shorten the names for the functions. I realize thats an easy change, but when defining the vector, while I did my best not to call anything through function pointer, there are a few places where I needed to use them. This could be remedied by increasing the number of arguments you need to pass to DEFINE_VEC, but you have to pass so many already I don't its worth the change. Also shortening the function names would be a deep refactor of all of this git repo which would be too much to ensure functionality. 
