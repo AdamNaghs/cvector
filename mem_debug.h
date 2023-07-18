@@ -180,9 +180,9 @@ void *debug_malloc(size_t size, uint32 line, char *file, char *resize_statement)
 */
 void *debug_realloc(void *ptr, size_t size, uint32 line, char *file, char *resize_statement, char *name)
 {
-    void *new_ptr = realloc(ptr, size);
     Debug_Data in = {ptr};
     Debug_Data *d = unpack_Debug_Data(vec_find_Vec_Mem(&debug_vec, in));
+    void *new_ptr = realloc(ptr, size);
 #if DEBUG_MEM_PRINT_ALL
     fprintf(stderr,
             YEL "debug_realloc called on line %d, in file %s. Statement used to resize was (%s) is equal to %d bytes. Pointer named (%s) has been resized %d times.\n" RESET,
