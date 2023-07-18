@@ -367,7 +367,7 @@ typedef enum
 		if (init_err != VEC_OK)                                                                            \
 		{                                                                                                  \
 			fprintf(stderr, "Vec Init Error: in vector on line %d in file %s. \
-  	Vec_Error Code: %d \n",                                                                                \
+ 	Vec_Error Code: %d \n",                                                                                \
 					__LINE__, __FILE__, init_err);                                                         \
 		}                                                                                                  \
 		assert(init_err == VEC_OK);                                                                        \

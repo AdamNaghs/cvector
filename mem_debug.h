@@ -17,7 +17,7 @@
 #define DEBUG_MEM 1
 
 /* set to 1 to enable printing when there are no errors */
-#define DEBUG_MEM_PRINT_ALL 0
+#define DEBUG_MEM_PRINT_ALL 1
 
 /* set to 1 to enable */
 #define DEBUG_MEM_COLOR 1
@@ -54,18 +54,17 @@ typedef struct
 {
     void *data;
     char *file;
-    size_t size_bytes;
+    Name alias;
     uint32 line;
     uint32 realloc_count;
-    Name alias;
+    size_t size_bytes;
 } Debug_Data;
 
 void free_debug_data(Debug_Data d) { free(d.data); }
 
 Comparison debug_data_cmp(const Debug_Data *a, const Debug_Data *b)
 {
-    if ((a->data == b->data) ||
-        ((a->line == b->line) && (a->file == b->file)))
+    if ((a->data == b->data))
         return EQUAL;
     if (a->line < b->line)
         return LESS;
@@ -180,19 +179,31 @@ void *debug_malloc(size_t size, uint32 line, char *file, char *resize_statement)
 */
 void *debug_realloc(void *ptr, size_t size, uint32 line, char *file, char *resize_statement, char *name)
 {
-    Debug_Data in = {ptr};
-    Debug_Data *d = unpack_Debug_Data(vec_find_Vec_Mem(&debug_vec, in));
+    Debug_Data in = {.data = ptr};
+    Return_Debug_Data ret = (vec_find_Vec_Mem(&debug_vec, in));
     void *new_ptr = realloc(ptr, size);
+    if (ret.err == VEC_CANT_FIND_ERROR) {
+        assert(new_ptr != NULL);
+        Debug_Data new_data = {.data = new_ptr, .size_bytes = size, .file = file, .line = line, .realloc_count = 0, .alias = {.known = true, .name = name}};
+        vec_push_back_Vec_Mem(&debug_vec,new_data);
 #if DEBUG_MEM_PRINT_ALL
     fprintf(stderr,
             YEL "debug_realloc called on line %d, in file %s. Statement used to resize was (%s) is equal to %d bytes. Pointer named (%s) has been resized %d times.\n" RESET,
-            line, file, resize_statement, size, name, d->realloc_count + 1);
+            line, file, resize_statement, size, name, new_data.realloc_count + 1);
 #endif
+        return new_ptr;
+    }
+    Debug_Data* d = unpack_Debug_Data(ret);
     d->alias.name = name;
     d->alias.known = true;
     d->size_bytes = size;
     d->realloc_count++;
     d->data = new_ptr;
+#if DEBUG_MEM_PRINT_ALL
+    fprintf(stderr,
+            YEL "debug_realloc called on line %d, in file %s. Statement used to resize was (%s) is equal to %d bytes. Pointer named (%s) has been resized %d times.\n" RESET,
+            line, file, resize_statement, size, name, d->realloc_count + 1);
+#endif
     return new_ptr;
 }
 

@@ -52,7 +52,8 @@ int main()
     (vec.free)(&vec);
     /* Check for memory leaks */
 
-    int *j = malloc(sizeof(int));
+    int *j;
+    realloc(j,sizeof(int));
 
     MEM_DEBUG_END(stderr);
     
