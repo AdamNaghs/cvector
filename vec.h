@@ -25,7 +25,7 @@ typedef enum
 	GREATER = 1,
 } Comparison;
 
-Comparison compare_floats(const float *a, const float *b)
+static Comparison compare_floats(const float *a, const float *b)
 {
 	/* Small number to account for floating point precision errors */
 	const float epsilon = 0.00001;
@@ -37,7 +37,7 @@ Comparison compare_floats(const float *a, const float *b)
 	return LESS;
 }
 
-Comparison compare_ints(const int *a, const int *b)
+static Comparison compare_ints(const int *a, const int *b)
 {
 	if (*a == *b)
 		return EQUAL;

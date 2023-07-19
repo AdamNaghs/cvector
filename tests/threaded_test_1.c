@@ -55,8 +55,8 @@ int main()
     int *j;
     /* realloc(j,sizeof(int)); */
 
-    MEM_DEBUG_INSPECT(stderr);
-    
     MEM_DEBUG_END(stderr);
+    
+    MEM_DEBUG_INSPECT(stderr);
     return 0;
 }

@@ -19,9 +19,9 @@
 #define DEBUG_MEM 1
 
 /* set to 1 to enable printing when there are no errors */
-#define DEBUG_MEM_PRINT_ALL 1
+#define DEBUG_MEM_PRINT_ALL 0
 
-/* set to 1 to enable */
+/* set to 1 to enable colored text */
 #define DEBUG_MEM_COLOR 1
 /*
    Use these twp macros to run the memory debugger
@@ -40,13 +40,14 @@
     Print info of all pointers currently allocated
     File Name must be less than 100 chars long
 */
-#define MEM_DEBUG_INSPECT(stream) (debug_inspect_memory(stream, __LINE__, __FILE__))
+#define MEM_DEBUG_INSPECT(stream) (mem_debug_inspect_memory(stream, __LINE__, __FILE__))
 
 /* Implementation below */
 void *mem_debug_internal_malloc(size_t size) { return malloc(size); }
 void *mem_debug_internal_realloc(void *block, size_t size) { return realloc(block, size); }
 void *mem_debug_internal_calloc(size_t count, size_t size) { return calloc(count, size); }
 void mem_debug_internal_free(void *block) { free(block); }
+
 /* if a ptr is realloced we set the name to the ptrs name */
 typedef struct
 {
@@ -195,9 +196,9 @@ void *mem_debug_realloc(void *ptr, size_t size, uint32 line, char *file, char *r
 {
     Debug_Data in = {.data = ptr};
     Return_Debug_Data ret = (vec_find_Vec_Mem(&debug_vec, in));
+    void *new_ptr = mem_debug_internal_realloc(ptr, size);
     if (ret.err == VEC_CANT_FIND_ERROR)
     {
-        void *new_ptr = mem_debug_internal_realloc(ptr, size);
         /* assert(new_ptr != NULL); */
         Debug_Data new_data = {.data = new_ptr, .size_bytes = size, .file = file, .line = line, .realloc_count = 0, .alias = {.known = true, .name = name}};
         vec_push_back_Vec_Mem(&debug_vec, new_data);
@@ -209,7 +210,6 @@ void *mem_debug_realloc(void *ptr, size_t size, uint32 line, char *file, char *r
         return new_ptr;
     }
     Debug_Data *d = unpack_Debug_Data(ret);
-    void *new_ptr = mem_debug_internal_realloc(ptr, size);
     d->alias.name = name;
     d->alias.known = true;
     d->size_bytes = size;
