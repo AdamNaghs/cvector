@@ -49,7 +49,7 @@ int main()
     MEM_DEBUG_INSPECT(stderr);
 
     /* Clean up */
-    (vec.free)(&vec);
+    /* vec_free_Threads(&vec); */
     /* Check for memory leaks */
 
     int *j;

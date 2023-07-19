@@ -291,11 +291,13 @@ typedef enum
 		RETURN_IF_NULL(v, "size_" #name, SIZE_MAX);                                                        \
 		return (v->size);                                                                                  \
 	}                                                                                                      \
+                                                                                                           \
 	size_t vec_capacity_##name(name *v)                                                                    \
 	{                                                                                                      \
 		RETURN_IF_NULL(v, "capacity_" #name, SIZE_MAX);                                                    \
 		return (v->capacity);                                                                              \
 	}                                                                                                      \
+                                                                                                           \
 	bool vec_empty_##name(name *v)                                                                         \
 	{                                                                                                      \
 		RETURN_IF_NULL(v, "empty_" #name, true);                                                           \
@@ -306,7 +308,7 @@ typedef enum
 	{                                                                                                      \
 		RETURN_IF_NULL(v, "push_back_" #name, VEC_GIVEN_NULL_ERROR);                                       \
 		Vec_Error err = interal_try_resize_##name(v);                                                      \
-		RETURN_ON_ERROR(err, "push_back_" #type "_resize_" #name);                                         \
+		RETURN_ON_ERROR(err, "push_back_" #type " (interal_try_resize)_" #name);                                         \
 		(v->data)[(v->size)++] = value;                                                                    \
 		return VEC_OK;                                                                                     \
 	}                                                                                                      \
@@ -345,7 +347,6 @@ typedef enum
 		RETURN_IF_NULL(v, "at_" #name,                                                                     \
 					   (internal_pack_##type(NULL, -1, VEC_GIVEN_NULL_ERROR)));                            \
 		Vec_Error err = internal_oob_check_##name(v, index);                                               \
-                                                                                                           \
 		if (err != VEC_OK)                                                                                 \
 			return internal_pack_##type(NULL, -1, err);                                                    \
 		return internal_pack_##type((&((v->data)[index])), index, VEC_OK);                                 \

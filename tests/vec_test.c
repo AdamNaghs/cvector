@@ -26,14 +26,14 @@ int main()
         Vec_Error push_back_err = v.push_back(&v, i);
         ASSERT_PRINT(push_back_err == VEC_OK);
         ASSERT_PRINT(v.data[i] == i);
-        fprintf(stderr, "Capacity %d, Size %d, Index/data %d\n", v.capacity, v.size, i);
+        fprintf(stderr, "Capacity %llu, Size %llu, Index/data %d\n", v.capacity, v.size, i);
     }
     print_vec_int(&v);
 
     size_t size = v.read_size(&v);
     ASSERT_PRINT(size != SIZE_MAX);
     ASSERT_PRINT(size == 10);
-    fprintf(stderr, "Read size after adding %d\n", size);
+    fprintf(stderr, "Read size after adding %llu\n", size);
 
     size_t capacity_after_adds = v.read_capacity(&v);
     ASSERT_PRINT(capacity_after_adds != SIZE_MAX);
@@ -52,7 +52,7 @@ int main()
         Vec_Error remove_err = v.remove(&v, i);
         ASSERT_PRINT(remove_err == VEC_OK);
         ASSERT_PRINT(v.data[i] == i);
-        fprintf(stderr, "Capacity %d, Size %d, Index/data %d\n", v.capacity, v.size, i);
+        fprintf(stderr, "Capacity %llu, Size %llu, Index/data %d\n", v.capacity, v.size, i);
     }
 
     Vec_Error clear_err = v.clear(&v);
@@ -67,7 +67,7 @@ int main()
     size_t size_after_clear = v.read_size(&v);
     ASSERT_PRINT(size_after_clear != SIZE_MAX);
     ASSERT_PRINT(size_after_clear == 0);
-    fprintf(stderr, "Read size after clear %zu\n", size_after_clear);
+    fprintf(stderr, "Read size after clear %llu\n", size_after_clear);
 
     Vec_Error compact_after_clear_err = v.compact(&v);
     fprintf(stderr, "compact_after_clear_err Vec_Error %d\n", compact_after_clear_err);
@@ -92,10 +92,10 @@ int main()
     ASSERT_PRINT(*at_res.data == 5);
     ASSERT_PRINT(at_res.index == 0);
 
-    Vec_Error push_back_at_end_err = v.push_back(&v, 7);
-    Vec_Error push_back_at_end_err1 = v.push_back(&v, 8);
+    v.push_back(&v, 7);
+    v.push_back(&v, 8);
     print_vec_int(&v);
-    fprintf(stderr, "Capacity at end %d, Size at end %d\n", v.capacity, v.size);
+    fprintf(stderr, "Capacity at end %llu, Size at end %llu\n", v.capacity, v.size);
     ASSERT_PRINT(v.capacity == 4);
 
     Vec_Error free_err = v.free(&v);

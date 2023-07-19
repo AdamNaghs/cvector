@@ -173,7 +173,7 @@ void *debug_malloc(size_t size, uint32 line, char *file, char *resize_statement)
     void *ptr = malloc(size);
 #if DEBUG_MEM_PRINT_ALL
     fprintf(stderr,
-            BLU "debug_malloc called on line %d, in file %s. Statement used to resize was (%s) is equal to %d bytes.\n" RESET,
+            BLU "debug_malloc called on line %d, in file %s. Statement used to resize was (%s) is equal to %llu bytes.\n" RESET,
             line, file, resize_statement, size);
 #endif
     Name n = {.known = false, .name = "Lengthy_Placeholder"};
@@ -200,7 +200,7 @@ void *debug_realloc(void *ptr, size_t size, uint32 line, char *file, char *resiz
         vec_push_back_Vec_Mem(&debug_vec, new_data);
 #if DEBUG_MEM_PRINT_ALL
         fprintf(stderr,
-                YEL "debug_realloc called on line %d, in file %s. Statement used to resize was (%s) is equal to %d bytes. Pointer named (%s) has been resized %d times.\n" RESET,
+                YEL "debug_realloc called on line %d, in file %s. Statement used to resize was (%s) is equal to %llu bytes. Pointer named (%s) has been resized %d times.\n" RESET,
                 line, file, resize_statement, size, name, new_data.realloc_count + 1);
 #endif
         return new_ptr;
@@ -214,7 +214,7 @@ void *debug_realloc(void *ptr, size_t size, uint32 line, char *file, char *resiz
     d->data = new_ptr;
 #if DEBUG_MEM_PRINT_ALL
     fprintf(stderr,
-            YEL "debug_realloc called on line %d, in file %s. Statement used to resize was (%s) is equal to %d bytes. Pointer named (%s) has been resized %d times.\n" RESET,
+            YEL "debug_realloc called on line %d, in file %s. Statement used to resize was (%s) is equal to %llu bytes. Pointer named (%s) has been resized %d times.\n" RESET,
             line, file, resize_statement, size, name, d->realloc_count + 1);
 #endif
     return new_ptr;
@@ -226,7 +226,7 @@ void *debug_calloc(size_t num, size_t size, uint32 line, char *file, char *resiz
     void *ptr = calloc(num, size);
 #if DEBUG_MEM_PRINT_ALL
     fprintf(stderr,
-            YEL "debug_calloc called on line %d, in file %s. Statement used to resize was (%s) is equal to %d bytes.\n" RESET,
+            YEL "debug_calloc called on line %d, in file %s. Statement used to resize was (%s) is equal to %llu bytes.\n" RESET,
             line, file, resize_statement, size);
 #endif
     Name n = {.known = false, .name = "Lengthy_Placeholder"};
@@ -278,7 +278,7 @@ void find_leaks(FILE *stream)
         fprintf(stream, RED "Found & Patched %d leaks.\n" RESET, i);
 }
 
-#if DEBUG_MEM == 1
+#if DEBUG_MEM
 /* DEBUG MALLOC */
 #define malloc(size) (debug_malloc(size, __LINE__, __FILE__, #size))
 /* DEBUG REALLOC */
