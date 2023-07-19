@@ -1,0 +1,1 @@
+gcc tests\threaded_test_1.c -o test.exe

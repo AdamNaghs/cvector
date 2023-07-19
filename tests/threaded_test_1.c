@@ -20,7 +20,7 @@ DWORD WINAPI allocateMemory(LPVOID param)
             return 1;
         }
         /* Uncomment the following line to fix the memory leak */
-         free(memory); 
+         /* free(memory);  */
     }
     return 0;
 }
