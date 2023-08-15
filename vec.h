@@ -85,10 +85,10 @@ Behavior of Note: (all for functions called through func ptr)
  5. You should not alter the size, capacity, or data, let the vec do it!
  6. When reading the code, if you find a function with a comment indicating it is internal, do not call it
  7. you can forget about most of the error handling and worry about it when it comes up
-by using unpack_##type, ASSERT_ON_ERROR, and RETURN_ON_ERROR
+by using unpack_##type, VEC_ASSERT_ON_ERROR, and VEC_RETURN_ON_ERROR
 */
 
-#define ASSERT_ON_ERROR(err, func_name_string)                                                                                                                     \
+#define VEC_ASSERT_ON_ERROR(err, func_name_string)                                                                                                                 \
 	do                                                                                                                                                             \
 	{                                                                                                                                                              \
 		if (err != VEC_OK)                                                                                                                                         \
@@ -98,7 +98,7 @@ by using unpack_##type, ASSERT_ON_ERROR, and RETURN_ON_ERROR
 		}                                                                                                                                                          \
 	} while (0)
 
-#define RETURN_ON_ERROR(err, func_name_string)                                                                                                                      \
+#define VEC_RETURN_ON_ERROR(err, func_name_string)                                                                                                                  \
 	do                                                                                                                                                              \
 	{                                                                                                                                                               \
 		if (err != VEC_OK)                                                                                                                                          \
@@ -108,7 +108,7 @@ by using unpack_##type, ASSERT_ON_ERROR, and RETURN_ON_ERROR
 		}                                                                                                                                                           \
 	} while (0)
 
-#define RETURN_IF_NULL(ptr, func_name_string, err)                         \
+#define VEC_RETURN_IF_NULL(ptr, func_name_string, err)                     \
 	do                                                                     \
 	{                                                                      \
 		if (ptr == NULL)                                                   \
@@ -131,7 +131,7 @@ by using unpack_##type, ASSERT_ON_ERROR, and RETURN_ON_ERROR
                                                                                 \
 	type *unpack_##type(Return_##type unpack)                                   \
 	{                                                                           \
-		ASSERT_ON_ERROR(unpack.err, "unpack_" #type);                           \
+		VEC_ASSERT_ON_ERROR(unpack.err, "unpack_" #type);                       \
 		return unpack.data;                                                     \
 	}                                                                           \
 	Return_##type internal_pack_##type(type *data, size_t index, Vec_Error err) \
@@ -144,258 +144,258 @@ by using unpack_##type, ASSERT_ON_ERROR, and RETURN_ON_ERROR
 
 /*
 	Functions:
-	 bool (*empty)(this *);                                                                             
-	 size_t (*read_size)(this *);                                                                       
-	 size_t (*read_capacity)(this *);                                                                   
-	 Vec_Error (*free)(this *);                                                                         
-	 Vec_Error (*clear)(this *);                                                                        
-	 Vec_Error (*compact)(this *);                                                                      
-	 Vec_Error (*remove)(this *, size_t index);                                                         
-	 Vec_Error (*realloc)(this *, size_t capacity);                                                     
-	 Vec_Error (*push_back)(this *, type value);                                                        
-	 Vec_Error (*insert)(this *, size_t index, type value);                                             
-	 Vec_Error (*swap)(this *, size_t index0, size_t index1);                                           
-	 Return_##type (*find)(this *, type value);                                                         
-	 Return_##type (*at)(this *, size_t index);                                                         
-	 void (*free_obj)(type value);   
+	 bool (*empty)(this *);
+	 size_t (*read_size)(this *);
+	 size_t (*read_capacity)(this *);
+	 Vec_Error (*free)(this *);
+	 Vec_Error (*clear)(this *);
+	 Vec_Error (*compact)(this *);
+	 Vec_Error (*remove)(this *, size_t index);
+	 Vec_Error (*realloc)(this *, size_t capacity);
+	 Vec_Error (*push_back)(this *, type value);
+	 Vec_Error (*insert)(this *, size_t index, type value);
+	 Vec_Error (*swap)(this *, size_t index0, size_t index1);
+	 Return_##type (*find)(this *, type value);
+	 Return_##type (*at)(this *, size_t index);
+	 void (*free_obj)(type value);
 */
 
-
 /* define implementation */
-#define DEFINE_VEC(type, name, compare_func)                                                               \
-	DEFINE_RETURN_TYPE(type);                                                                              \
-	typedef struct name name;                                                                              \
-	typedef Comparison (*Vec_Compare_Func_##type)(const type *, const type *);                             \
-                                                                                                           \
-	struct name                                                                                            \
-	{                                                                                                      \
-		type *(data);                                                                                      \
-		size_t(size);                                                                                      \
-		size_t(capacity);                                                                                  \
-		Vec_Compare_Func_##type(compare_vals);                                                             \
-		bool (*empty)(name *);                                                                             \
-		size_t (*read_size)(name *);                                                                       \
-		size_t (*read_capacity)(name *);                                                                   \
-		Vec_Error (*free)(name *);                                                                         \
-		Vec_Error (*clear)(name *);                                                                        \
-		Vec_Error (*compact)(name *);                                                                      \
-		Vec_Error (*remove)(name *, size_t index);                                                         \
-		Vec_Error (*realloc)(name *, size_t capacity);                                                     \
-		Vec_Error (*push_back)(name *, type value);                                                        \
-		Vec_Error (*insert)(name *, size_t index, type value);                                             \
-		Vec_Error (*swap)(name *, size_t index0, size_t index1);                                           \
-		Return_##type (*find)(name *, type value);                                                         \
-		Return_##type (*at)(name *, size_t index);                                                         \
-		void (*free_obj)(type value);                                                                      \
-	};                                                                                                     \
-                                                                                                           \
-	Vec_Error vec_realloc_##name(name *name##_v, size_t name##_capacity)                                   \
-	{                                                                                                      \
-		RETURN_IF_NULL(name##_v, "realloc_" #type, VEC_GIVEN_NULL_ERROR);                                  \
-		if (name##_capacity <= 0)                                                                          \
-			name##_capacity = 1;                                                                           \
-		type *new_data = (type *)realloc((name##_v->data), name##_capacity * sizeof(type));                \
-		RETURN_IF_NULL(new_data, "realloc_" #type, VEC_ALLOC_ERROR);                                       \
-		(name##_v->data) = new_data;                                                                       \
-		(name##_v->capacity) = name##_capacity;                                                            \
-		return VEC_OK;                                                                                     \
-	}                                                                                                      \
-	/*internal method used to determine if we need to resize and do it if we do*/                          \
-	Vec_Error interal_try_resize_##name(name *v)                                                           \
-	{                                                                                                      \
-		RETURN_IF_NULL(v, "try_resize", VEC_GIVEN_NULL_ERROR);                                             \
-		if ((v->size) == (v->capacity))                                                                    \
-		{                                                                                                  \
-			(v->capacity) = (v->capacity) == 0 ? 1 : (v->capacity) * 2;                                    \
-			Vec_Error err = vec_realloc_##name(v, (v->capacity));                                          \
-			RETURN_ON_ERROR(err, "internal_try_resize_" #name " (double)");                                \
-			return VEC_OK;                                                                                 \
-		}                                                                                                  \
-		if ((v->size) < (v->capacity) / 4)                                                                 \
-		{                                                                                                  \
-			Vec_Error err = vec_realloc_##name(v, (v->capacity) / 2);                                      \
-			RETURN_ON_ERROR(err, "internal_try_resize_" #name " (shrink)");                                \
-			return VEC_OK;                                                                                 \
-		}                                                                                                  \
-		return VEC_OK;                                                                                     \
-	}                                                                                                      \
-	/* internal method to check if index is oob */                                                         \
-	Vec_Error internal_oob_check_##name(name *v, size_t index)                                             \
-	{                                                                                                      \
-		if (index > (v->size))                                                                             \
-		{                                                                                                  \
-			return VEC_OOB_ERROR;                                                                          \
-		}                                                                                                  \
-		return VEC_OK;                                                                                     \
-	}                                                                                                      \
-	/* internal free obj method */                                                                         \
-	void internal_free_obj_##name(name *v, type value)                                                     \
-	{                                                                                                      \
-		if (v->free_obj != NULL)                                                                           \
-			(v->free_obj)(value);                                                                          \
-	}                                                                                                      \
-                                                                                                           \
-	Vec_Error vec_clear_##name(name *v)                                                                    \
-	{                                                                                                      \
-		RETURN_IF_NULL(v, "clear_" #name, VEC_GIVEN_NULL_ERROR);                                           \
-		size_t i;                                                                                          \
-		for (i = 0; i < (v->size); i++)                                                                    \
-		{                                                                                                  \
-			internal_free_obj_##name(v, ((v->data)[i]));                                                   \
-			memset(&((v->data)[i]), 0, sizeof((v->data)[i]));                                              \
-		}                                                                                                  \
-		(v->size) = 0;                                                                                     \
-		return VEC_OK;                                                                                     \
-	}                                                                                                      \
-                                                                                                           \
-	Vec_Error vec_remove_##name(name *v, size_t index)                                                     \
-	{                                                                                                      \
-		RETURN_IF_NULL(v, "remove_" #type, VEC_GIVEN_NULL_ERROR);                                          \
-		RETURN_ON_ERROR(internal_oob_check_##name(v, index), "remove_" #type " (oob check index)_" #name); \
-		internal_free_obj_##name(v, ((v->data)[index]));                                                   \
-		size_t i;                                                                                          \
-		for (i = index; i < ((v->size) - 1); i++)                                                          \
-		{                                                                                                  \
-			(v->data)[i] = (v->data)[i + 1];                                                               \
-		}                                                                                                  \
-		(v->size)--;                                                                                       \
-		Vec_Error err = interal_try_resize_##name(v);                                                      \
-		RETURN_ON_ERROR(err, "remove_" #type "(internal_try_resize)_" #name);                              \
-		return VEC_OK;                                                                                     \
-	}                                                                                                      \
-                                                                                                           \
-	Vec_Error vec_free_##name(name *v)                                                                     \
-	{                                                                                                      \
-		RETURN_IF_NULL(v, "free_" #name, VEC_GIVEN_NULL_ERROR);                                            \
-		if (v->free_obj != NULL)                                                                           \
-		{                                                                                                  \
-			size_t i;                                                                                      \
-			for (i = 0; i < (v->size); i++)                                                                \
-			{                                                                                              \
-				internal_free_obj_##name(v, ((v->data)[i]));                                               \
-			}                                                                                              \
-		}                                                                                                  \
-		free((v->data));                                                                                   \
-		(v->data) = NULL;                                                                                  \
-		(v->size) = 0;                                                                                     \
-		(v->capacity) = 0;                                                                                 \
-		return VEC_OK;                                                                                     \
-	}                                                                                                      \
-                                                                                                           \
-	Vec_Error vec_swap_##name(name *v, size_t index0, size_t index1)                                       \
-	{                                                                                                      \
-		RETURN_IF_NULL(v, "swap", VEC_GIVEN_NULL_ERROR);                                                   \
-		Vec_Error oob0 = internal_oob_check_##name(v, index0);                                             \
-		RETURN_ON_ERROR(oob0, "swap_" #type " (index0)");                                                  \
-		Vec_Error oob1 = internal_oob_check_##name(v, index1);                                             \
-		RETURN_ON_ERROR(oob1, "swap_" #type " (index1)");                                                  \
-		type tmp = (v->data)[index0];                                                                      \
-		(v->data)[index0] = (v->data)[index1];                                                             \
-		(v->data)[index1] = tmp;                                                                           \
-		return VEC_OK;                                                                                     \
-	}                                                                                                      \
-                                                                                                           \
-	Vec_Error vec_compact_##name(name *v)                                                                  \
-	{                                                                                                      \
-		RETURN_IF_NULL(v, "compact_" #name, VEC_GIVEN_NULL_ERROR);                                         \
-		if ((v->capacity) == (v->size))                                                                    \
-			return VEC_OK;                                                                                 \
-		Vec_Error err = vec_realloc_##name(v, (v->size));                                                  \
-		RETURN_ON_ERROR(err, "compact");                                                                   \
-		return VEC_OK;                                                                                     \
-	}                                                                                                      \
-                                                                                                           \
-	size_t vec_size_##name(name *v)                                                                        \
-	{                                                                                                      \
-		RETURN_IF_NULL(v, "size_" #name, SIZE_MAX);                                                        \
-		return (v->size);                                                                                  \
-	}                                                                                                      \
-                                                                                                           \
-	size_t vec_capacity_##name(name *v)                                                                    \
-	{                                                                                                      \
-		RETURN_IF_NULL(v, "capacity_" #name, SIZE_MAX);                                                    \
-		return (v->capacity);                                                                              \
-	}                                                                                                      \
-                                                                                                           \
-	bool vec_empty_##name(name *v)                                                                         \
-	{                                                                                                      \
-		RETURN_IF_NULL(v, "empty_" #name, true);                                                           \
-		return ((v->size) == 0);                                                                           \
-	}                                                                                                      \
-                                                                                                           \
-	Vec_Error vec_push_back_##name(name *v, type value)                                                    \
-	{                                                                                                      \
-		RETURN_IF_NULL(v, "push_back_" #name, VEC_GIVEN_NULL_ERROR);                                       \
-		Vec_Error err = interal_try_resize_##name(v);                                                      \
-		RETURN_ON_ERROR(err, "push_back_" #type " (interal_try_resize)_" #name);                           \
-		(v->data)[(v->size)++] = value;                                                                    \
-		return VEC_OK;                                                                                     \
-	}                                                                                                      \
-                                                                                                           \
-	Vec_Error vec_insert_##name(name *v, size_t index, type value)                                         \
-	{                                                                                                      \
-		RETURN_IF_NULL(v, "insert_" #name, VEC_GIVEN_NULL_ERROR);                                          \
-		RETURN_ON_ERROR(internal_oob_check_##name(v, index), "insert (oob check index)");                  \
-		Vec_Error err = interal_try_resize_##name(v);                                                      \
-		RETURN_ON_ERROR(err, "insert_" #type " (interal_try_resize)_" #name);                              \
-		size_t i;                                                                                          \
-		for (i = (v->size); i > index; i--)                                                                \
-		{                                                                                                  \
-			(v->data)[i] = (v->data)[i - 1];                                                               \
-		}                                                                                                  \
-		(v->data)[index] = value;                                                                          \
-		(v->size)++;                                                                                       \
-		return VEC_OK;                                                                                     \
-	}                                                                                                      \
-                                                                                                           \
-	Return_##type vec_find_##name(name *v, type value)                                                     \
-	{                                                                                                      \
-		RETURN_IF_NULL(v, "find_" #name,                                                                   \
-					   (internal_pack_##type(NULL, -1, VEC_GIVEN_NULL_ERROR)));                            \
-		int i;                                                                                             \
-		for (i = 0; i < (v->size); i++)                                                                    \
-		{                                                                                                  \
-			if ((compare_func)(&((v->data)[i]), &value) == EQUAL)                                          \
-				return internal_pack_##type((&((v->data)[i])), (size_t)i, VEC_OK);                         \
-		}                                                                                                  \
-		return internal_pack_##type(NULL, -1, VEC_CANT_FIND_ERROR);                                        \
-	}                                                                                                      \
-                                                                                                           \
-	Return_##type vec_at_##name(name *v, size_t index)                                                     \
-	{                                                                                                      \
-		RETURN_IF_NULL(v, "at_" #name,                                                                     \
-					   (internal_pack_##type(NULL, -1, VEC_GIVEN_NULL_ERROR)));                            \
-		Vec_Error err = internal_oob_check_##name(v, index);                                               \
-		if (err != VEC_OK)                                                                                 \
-			return internal_pack_##type(NULL, -1, err);                                                    \
-		return internal_pack_##type((&((v->data)[index])), index, VEC_OK);                                 \
-	}                                                                                                      \
-                                                                                                           \
-	Vec_Error name##_init(name *v, void (*free_element)(type))                                             \
-	{                                                                                                      \
-		CREATE_VEC(v, compare_func, type, name);                                                           \
-		if (free_element != NULL)                                                                          \
-			v->free_obj = free_element;                                                                    \
-		RETURN_IF_NULL(v->data, "init_" #name, VEC_ALLOC_ERROR);                                           \
-		return VEC_OK;                                                                                     \
-	}                                                                                                      \
-                                                                                                           \
-	name create_##name(void (*free_element)(type))                                                         \
-	{                                                                                                      \
-		name init_vec;                                                                                     \
-		Vec_Error init_err = name##_init(&init_vec, free_element);                                         \
-		if (init_err != VEC_OK)                                                                            \
-		{                                                                                                  \
+#define DEFINE_VEC(type, name, compare_func)                                                                   \
+	DEFINE_RETURN_TYPE(type);                                                                                  \
+	typedef struct name name;                                                                                  \
+	typedef Comparison (*Vec_Compare_Func_##type)(const type *, const type *);                                 \
+                                                                                                               \
+	struct name                                                                                                \
+	{                                                                                                          \
+		type *(data);                                                                                          \
+		size_t(size);                                                                                          \
+		size_t(capacity);                                                                                      \
+		Vec_Compare_Func_##type(compare_vals);                                                                 \
+		bool (*empty)(name *);                                                                                 \
+		size_t (*read_size)(name *);                                                                           \
+		size_t (*read_capacity)(name *);                                                                       \
+		Vec_Error (*free)(name *);                                                                             \
+		Vec_Error (*clear)(name *);                                                                            \
+		Vec_Error (*compact)(name *);                                                                          \
+		Vec_Error (*remove)(name *, size_t index);                                                             \
+		Vec_Error (*realloc)(name *, size_t capacity);                                                         \
+		Vec_Error (*push_back)(name *, type value);                                                            \
+		Vec_Error (*insert)(name *, size_t index, type value);                                                 \
+		Vec_Error (*swap)(name *, size_t index0, size_t index1);                                               \
+		Return_##type (*find)(name *, type value);                                                             \
+		Return_##type (*at)(name *, size_t index);                                                             \
+		void (*free_obj)(type value);                                                                          \
+	};                                                                                                         \
+                                                                                                               \
+	Vec_Error vec_realloc_##name(name *name##_v, size_t name##_capacity)                                       \
+	{                                                                                                          \
+		VEC_RETURN_IF_NULL(name##_v, "realloc_" #type, VEC_GIVEN_NULL_ERROR);                                  \
+		if (name##_capacity <= 0)                                                                              \
+			name##_capacity = 1;                                                                               \
+		type *new_data = (type *)realloc((name##_v->data), name##_capacity * sizeof(type));                    \
+		VEC_RETURN_IF_NULL(new_data, "realloc_" #type, VEC_ALLOC_ERROR);                                       \
+		(name##_v->data) = new_data;                                                                           \
+		(name##_v->capacity) = name##_capacity;                                                                \
+		return VEC_OK;                                                                                         \
+	}                                                                                                          \
+	/*internal method used to determine if we need to resize and do it if we do*/                              \
+	Vec_Error interal_try_resize_##name(name *v)                                                               \
+	{                                                                                                          \
+		VEC_RETURN_IF_NULL(v, "try_resize", VEC_GIVEN_NULL_ERROR);                                             \
+		if ((v->size) == (v->capacity))                                                                        \
+		{                                                                                                      \
+			(v->capacity) = (v->capacity) == 0 ? 1 : (v->capacity) * 2;                                        \
+			Vec_Error err = vec_realloc_##name(v, (v->capacity));                                              \
+			VEC_RETURN_ON_ERROR(err, "internal_try_resize_" #name " (double)");                                \
+			return VEC_OK;                                                                                     \
+		}                                                                                                      \
+		if ((v->size) < (v->capacity) / 4)                                                                     \
+		{                                                                                                      \
+			Vec_Error err = vec_realloc_##name(v, (v->capacity) / 2);                                          \
+			VEC_RETURN_ON_ERROR(err, "internal_try_resize_" #name " (shrink)");                                \
+			return VEC_OK;                                                                                     \
+		}                                                                                                      \
+		return VEC_OK;                                                                                         \
+	}                                                                                                          \
+	/* internal method to check if index is oob */                                                             \
+	Vec_Error internal_oob_check_##name(name *v, size_t index)                                                 \
+	{                                                                                                          \
+		if (index > (v->size))                                                                                 \
+		{                                                                                                      \
+			return VEC_OOB_ERROR;                                                                              \
+		}                                                                                                      \
+		return VEC_OK;                                                                                         \
+	}                                                                                                          \
+	/* internal free obj method */                                                                             \
+	void internal_free_obj_##name(name *v, type value)                                                         \
+	{                                                                                                          \
+		if (v->free_obj != NULL)                                                                               \
+			(v->free_obj)(value);                                                                              \
+	}                                                                                                          \
+                                                                                                               \
+	Vec_Error vec_clear_##name(name *v)                                                                        \
+	{                                                                                                          \
+		VEC_RETURN_IF_NULL(v, "clear_" #name, VEC_GIVEN_NULL_ERROR);                                           \
+		size_t i;                                                                                              \
+		for (i = 0; i < (v->size); i++)                                                                        \
+		{                                                                                                      \
+			internal_free_obj_##name(v, ((v->data)[i]));                                                       \
+			memset(&((v->data)[i]), 0, sizeof((v->data)[i]));                                                  \
+		}                                                                                                      \
+		(v->size) = 0;                                                                                         \
+		return VEC_OK;                                                                                         \
+	}                                                                                                          \
+                                                                                                               \
+	Vec_Error vec_remove_##name(name *v, size_t index)                                                         \
+	{                                                                                                          \
+		VEC_RETURN_IF_NULL(v, "remove_" #type, VEC_GIVEN_NULL_ERROR);                                          \
+		VEC_RETURN_ON_ERROR(internal_oob_check_##name(v, index), "remove_" #type " (oob check index)_" #name); \
+		internal_free_obj_##name(v, ((v->data)[index]));                                                       \
+		size_t i;                                                                                              \
+		for (i = index; i < ((v->size) - 1); i++)                                                              \
+		{                                                                                                      \
+			(v->data)[i] = (v->data)[i + 1];                                                                   \
+		}                                                                                                      \
+		(v->size)--;                                                                                           \
+		Vec_Error err = interal_try_resize_##name(v);                                                          \
+		VEC_RETURN_ON_ERROR(err, "remove_" #type "(internal_try_resize)_" #name);                              \
+		return VEC_OK;                                                                                         \
+	}                                                                                                          \
+                                                                                                               \
+	Vec_Error vec_free_##name(name *v)                                                                         \
+	{                                                                                                          \
+		VEC_RETURN_IF_NULL(v, "free_" #name, VEC_GIVEN_NULL_ERROR);                                            \
+		if (v->free_obj != NULL)                                                                               \
+		{                                                                                                      \
+			size_t i;                                                                                          \
+			for (i = 0; i < (v->size); i++)                                                                    \
+			{                                                                                                  \
+				internal_free_obj_##name(v, ((v->data)[i]));                                                   \
+			}                                                                                                  \
+		}                                                                                                      \
+		free((v->data));                                                                                       \
+		(v->data) = NULL;                                                                                      \
+		(v->size) = 0;                                                                                         \
+		(v->capacity) = 0;                                                                                     \
+		return VEC_OK;                                                                                         \
+	}                                                                                                          \
+                                                                                                               \
+	Vec_Error vec_swap_##name(name *v, size_t index0, size_t index1)                                           \
+	{                                                                                                          \
+		VEC_RETURN_IF_NULL(v, "swap", VEC_GIVEN_NULL_ERROR);                                                   \
+		Vec_Error oob0 = internal_oob_check_##name(v, index0);                                                 \
+		VEC_RETURN_ON_ERROR(oob0, "swap_" #type " (index0)");                                                  \
+		Vec_Error oob1 = internal_oob_check_##name(v, index1);                                                 \
+		VEC_RETURN_ON_ERROR(oob1, "swap_" #type " (index1)");                                                  \
+		type tmp = (v->data)[index0];                                                                          \
+		(v->data)[index0] = (v->data)[index1];                                                                 \
+		(v->data)[index1] = tmp;                                                                               \
+		return VEC_OK;                                                                                         \
+	}                                                                                                          \
+                                                                                                               \
+	Vec_Error vec_compact_##name(name *v)                                                                      \
+	{                                                                                                          \
+		VEC_RETURN_IF_NULL(v, "compact_" #name, VEC_GIVEN_NULL_ERROR);                                         \
+		if ((v->capacity) == (v->size))                                                                        \
+			return VEC_OK;                                                                                     \
+		Vec_Error err = vec_realloc_##name(v, (v->size));                                                      \
+		VEC_RETURN_ON_ERROR(err, "compact");                                                                   \
+		return VEC_OK;                                                                                         \
+	}                                                                                                          \
+                                                                                                               \
+	size_t vec_size_##name(name *v)                                                                            \
+	{                                                                                                          \
+		VEC_RETURN_IF_NULL(v, "size_" #name, SIZE_MAX);                                                        \
+		return (v->size);                                                                                      \
+	}                                                                                                          \
+                                                                                                               \
+	size_t vec_capacity_##name(name *v)                                                                        \
+	{                                                                                                          \
+		VEC_RETURN_IF_NULL(v, "capacity_" #name, SIZE_MAX);                                                    \
+		return (v->capacity);                                                                                  \
+	}                                                                                                          \
+                                                                                                               \
+	bool vec_empty_##name(name *v)                                                                             \
+	{                                                                                                          \
+		VEC_RETURN_IF_NULL(v, "empty_" #name, true);                                                           \
+		return ((v->size) == 0);                                                                               \
+	}                                                                                                          \
+                                                                                                               \
+	Vec_Error vec_push_back_##name(name *v, type value)                                                        \
+	{                                                                                                          \
+		VEC_RETURN_IF_NULL(v, "push_back_" #name, VEC_GIVEN_NULL_ERROR);                                       \
+		Vec_Error err = interal_try_resize_##name(v);                                                          \
+		VEC_RETURN_ON_ERROR(err, "push_back_" #type " (interal_try_resize)_" #name);                           \
+		(v->data)[(v->size)++] = value;                                                                        \
+		return VEC_OK;                                                                                         \
+	}                                                                                                          \
+                                                                                                               \
+	Vec_Error vec_insert_##name(name *v, size_t index, type value)                                             \
+	{                                                                                                          \
+		VEC_RETURN_IF_NULL(v, "insert_" #name, VEC_GIVEN_NULL_ERROR);                                          \
+		VEC_RETURN_ON_ERROR(internal_oob_check_##name(v, index), "insert (oob check index)");                  \
+		Vec_Error err = interal_try_resize_##name(v);                                                          \
+		VEC_RETURN_ON_ERROR(err, "insert_" #type " (interal_try_resize)_" #name);                              \
+		size_t i;                                                                                              \
+		for (i = (v->size); i > index; i--)                                                                    \
+		{                                                                                                      \
+			(v->data)[i] = (v->data)[i - 1];                                                                   \
+		}                                                                                                      \
+		(v->data)[index] = value;                                                                              \
+		(v->size)++;                                                                                           \
+		return VEC_OK;                                                                                         \
+	}                                                                                                          \
+                                                                                                               \
+	Return_##type vec_find_##name(name *v, type value)                                                         \
+	{                                                                                                          \
+		VEC_RETURN_IF_NULL(v, "find_" #name,                                                                   \
+						   (internal_pack_##type(NULL, -1, VEC_GIVEN_NULL_ERROR)));                            \
+		int i;                                                                                                 \
+		for (i = 0; i < (v->size); i++)                                                                        \
+		{                                                                                                      \
+			if ((compare_func)(&((v->data)[i]), &value) == EQUAL)                                              \
+				return internal_pack_##type((&((v->data)[i])), (size_t)i, VEC_OK);                             \
+		}                                                                                                      \
+		return internal_pack_##type(NULL, -1, VEC_CANT_FIND_ERROR);                                            \
+	}                                                                                                          \
+                                                                                                               \
+	Return_##type vec_at_##name(name *v, size_t index)                                                         \
+	{                                                                                                          \
+		VEC_RETURN_IF_NULL(v, "at_" #name,                                                                     \
+						   (internal_pack_##type(NULL, -1, VEC_GIVEN_NULL_ERROR)));                            \
+		Vec_Error err = internal_oob_check_##name(v, index);                                                   \
+		if (err != VEC_OK)                                                                                     \
+			return internal_pack_##type(NULL, -1, err);                                                        \
+		return internal_pack_##type((&((v->data)[index])), index, VEC_OK);                                     \
+	}                                                                                                          \
+                                                                                                               \
+	Vec_Error name##_init(name *v, void (*free_element)(type))                                                 \
+	{                                                                                                          \
+		CREATE_VEC(v, compare_func, type, name);                                                               \
+		if (free_element != NULL)                                                                              \
+			v->free_obj = free_element;                                                                        \
+		VEC_RETURN_IF_NULL(v->data, "init_" #name, VEC_ALLOC_ERROR);                                           \
+		return VEC_OK;                                                                                         \
+	}                                                                                                          \
+                                                                                                               \
+	name create_##name(void (*free_element)(type))                                                             \
+	{                                                                                                          \
+		name init_vec;                                                                                         \
+		Vec_Error init_err = name##_init(&init_vec, free_element);                                             \
+		if (init_err != VEC_OK)                                                                                \
+		{                                                                                                      \
 			fprintf(stderr, "Vec Init Error: in vector on line %d in file %s. \
- Vec_Error Code: %d \n",                                                                                   \
-					__LINE__, __FILE__, init_err);                                                         \
-		}                                                                                                  \
-		assert(init_err == VEC_OK);                                                                        \
-		return init_vec;                                                                                   \
+ Vec_Error Code: %d \n",                                                                                       \
+					__LINE__, __FILE__, init_err);                                                             \
+		}                                                                                                      \
+		assert(init_err == VEC_OK);                                                                            \
+		return init_vec;                                                                                       \
 	}
 
 /*
-Creates vector, indended use is for debugging with mem_debug.h
+	Creates vector, indended use is for debugging with mem_debug.h
+	Using this will allow for locating the initilization line and file.
 */
 #define CREATE_VEC(v, compare_func, type, name)     \
 	do                                              \
