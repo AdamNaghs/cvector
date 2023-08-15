@@ -76,3 +76,67 @@ Log Closed - Tue Aug 15 00:00:16 2023
 Log Closed - Tue Aug 15 00:00:31 2023
  - File: tests\log_test.c - Line: 9
 +-----+
+
++-----+
+ Log Opened - Tue Aug 15 00:10:36 2023
+ - File: tests\log_test.c - Line: 5
+
+1 | Tue Aug 15 00:10:36 2023
+  | File: tests\log_test.c - Line: 6 
+  -> Test
+
+2 | Tue Aug 15 00:10:36 2023
+  | File: tests\log_test.c - Line: 8 
+  -> This should be 100 : 100
+
+Log Closed - Tue Aug 15 00:10:36 2023
+ - File: tests\log_test.c - Line: 9
++-----+
+
++-----+
+ Log Opened - Tue Aug 15 00:11:25 2023
+ - File: tests\log_test.c - Line: 7
+
+1 | Tue Aug 15 00:11:25 2023
+  | File: tests\log_test.c - Line: 8 
+  -> Test
+
+2 | Tue Aug 15 00:11:25 2023
+  | File: tests\log_test.c - Line: 10 
+  -> This should be 100 : 100
+
+Log Closed - Tue Aug 15 00:11:25 2023
+ - File: tests\log_test.c - Line: 11
++-----+
+
++-----+
+ Log Opened - Tue Aug 15 00:11:59 2023
+ - File: tests\log_test.c - Line: 7
+
+1 | Tue Aug 15 00:11:59 2023
+  | File: tests\log_test.c - Line: 8 
+  -> Test
+
+2 | Tue Aug 15 00:11:59 2023
+  | File: tests\log_test.c - Line: 10 
+  -> This should be 100 : 100
+
+Log Closed - Tue Aug 15 00:11:59 2023
+ - File: tests\log_test.c - Line: 11
++-----+
+
++-----+
+ Log Opened - Tue Aug 15 00:12:18 2023
+ - File: tests\log_test.c - Line: 7
+
+1 | Tue Aug 15 00:12:18 2023
+  | File: tests\log_test.c - Line: 8 
+  -> Test
+
+2 | Tue Aug 15 00:12:18 2023
+  | File: tests\log_test.c - Line: 10 
+  -> This should be 100 : 100
+
+Log Closed - Tue Aug 15 00:12:18 2023
+ - File: tests\log_test.c - Line: 11
++-----+

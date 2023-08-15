@@ -57,8 +57,8 @@ typedef struct
     void *data;
     char *file;
     Name alias;
-    uint32 line;
-    uint32 realloc_count;
+    u32 line;
+    u32 realloc_count;
     size_t size_bytes;
 } Debug_Data;
 
@@ -129,7 +129,7 @@ void print_char_x_times(FILE *stream, char ch, int num)
 #endif
 
 #define DEBUG_MEM_BAR_LENGTH 159
-void mem_debug_inspect_memory(FILE *stream, uint32_t line, char *file)
+void mem_debug_inspect_memory(FILE *stream, u32 line, char *file)
 {
     size_t i;
     size_t size = vec_size_Vec_Mem(&debug_vec);
@@ -172,7 +172,7 @@ void mem_debug_print_memory(FILE *stream)
 }
 
 /* malloc acts as a constructor for Debug_Data */
-void *mem_debug_malloc(size_t size, uint32 line, char *file, char *resize_statement)
+void *mem_debug_malloc(size_t size, u32 line, char *file, char *resize_statement)
 {
     void *ptr = mem_debug_internal_malloc(size);
 #if DEBUG_MEM_PRINT_ALL
@@ -192,7 +192,7 @@ void *mem_debug_malloc(size_t size, uint32 line, char *file, char *resize_statem
     the line or file so we know where it came from
     Increment the realloc count
 */
-void *mem_debug_realloc(void *ptr, size_t size, uint32 line, char *file, char *resize_statement, char *name)
+void *mem_debug_realloc(void *ptr, size_t size, u32 line, char *file, char *resize_statement, char *name)
 {
     Debug_Data in = {.data = ptr};
     Return_Debug_Data ret = (vec_find_Vec_Mem(&debug_vec, in));
@@ -224,7 +224,7 @@ void *mem_debug_realloc(void *ptr, size_t size, uint32 line, char *file, char *r
 }
 
 /* should act as constructor like malloc */
-void *mem_debug_calloc(size_t num, size_t size, uint32 line, char *file, char *resize_statement)
+void *mem_debug_calloc(size_t num, size_t size, u32 line, char *file, char *resize_statement)
 {
     void *ptr = mem_debug_internal_calloc(num, size);
 #if DEBUG_MEM_PRINT_ALL
@@ -240,7 +240,7 @@ void *mem_debug_calloc(size_t num, size_t size, uint32 line, char *file, char *r
 
 /* should update to check if you incremented the ptr and tried to free that ptr instead of the original head */
 /* freak out if we try to free data not in the Vec */
-void mem_debug_free(void *ptr, uint32 line, char *file, char *var_name)
+void mem_debug_free(void *ptr, u32 line, char *file, char *var_name)
 {
     Debug_Data find = {ptr};
     Return_Debug_Data ret = vec_find_Vec_Mem(&debug_vec, find);
@@ -258,7 +258,7 @@ void mem_debug_free(void *ptr, uint32 line, char *file, char *var_name)
             GRN "mem_debug_free freeing variable on (line %d, file %s) from (line %d, file %s). Pointer %p was resized %d times.\n" RESET,
             line, file, found->line, found->file, var_name, found->realloc_count);
 #endif
-    ASSERT_ON_ERROR(vec_remove_Vec_Mem(&debug_vec, ret.index), "mem_debug_free error freeing debug_vec, likely freed unallocated memory or iterated pointer.");
+    VEC_ASSERT_ON_ERROR(vec_remove_Vec_Mem(&debug_vec, ret.index), "mem_debug_free error freeing debug_vec, likely freed unallocated memory or iterated pointer.");
 }
 
 /* print all unfreed pointers */

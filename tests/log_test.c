@@ -1,4 +1,6 @@
 #include "../logger/logger.h"
+#include "../mem_debug.h"
+
 
 int main(void)
 {
@@ -7,5 +9,7 @@ int main(void)
 
     Logf(l,"This should be 100 : %d",100);
     LogClose(l);
+
+    MEM_DEBUG_END(stderr);
     return 0;
 }
