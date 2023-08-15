@@ -43,10 +43,6 @@
 #define MEM_DEBUG_INSPECT(stream) (mem_debug_inspect_memory(stream, __LINE__, __FILE__))
 
 /* Implementation below */
-void *mem_debug_internal_malloc(size_t size) { return malloc(size); }
-void *mem_debug_internal_realloc(void *block, size_t size) { return realloc(block, size); }
-void *mem_debug_internal_calloc(size_t count, size_t size) { return calloc(count, size); }
-void mem_debug_internal_free(void *block) { free(block); }
 
 /* if a ptr is realloced we set the name to the ptrs name */
 typedef struct
@@ -82,6 +78,10 @@ DEFINE_VEC(Debug_Data, Vec_Mem, debug_data_cmp);
 
 static Vec_Mem debug_vec;
 
+void *mem_debug_internal_malloc(size_t size) { return malloc(size); }
+void *mem_debug_internal_realloc(void *block, size_t size) { return realloc(block, size); }
+void *mem_debug_internal_calloc(size_t count, size_t size) { return calloc(count, size); }
+void mem_debug_internal_free(void *block) { free(block); }
 
 void free_debug_data(Debug_Data d)
 {

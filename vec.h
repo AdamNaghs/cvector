@@ -1,5 +1,5 @@
-#ifndef VEC_H
-#define VEC_H /* 7/17/23 By Adam Naghavi*/
+#ifndef _VEC_H
+#define _VEC_H /* 7/17/23 By Adam Naghavi*/
 
 #include <stdbool.h>
 #include <stdlib.h>
@@ -9,12 +9,12 @@
 #include <assert.h>
 
 /*
-	To ensure modularity, the user can, and must for unique struct, define their own comparison
-	function to be used in the vector to ensure intended behavior.
+To ensure modularity, the user can, and must for unique struct, define their own comparison
+function to be used in the vector to ensure intended behavior.
 
-	Some common comparison functions are provided for the user but still must be
-	passed as an argument to the init to be used.
-	For strings use strcmp() from string.h
+Some common comparison functions are provided for the user but still must be
+passed as an argument to the init to be used.
+For strings use strcmp() from string.h
 */
 
 /* these numbers are compatible with strcmp*/
@@ -77,7 +77,7 @@ typedef enum
  User must define and pass a function to determine if their type is equal
  must return bool(technically an int) take arguements of (const * type, const * type)
 
-	Behavior of Note: (all for functions called through func ptr)
+Behavior of Note: (all for functions called through func ptr)
  1. Freeing will leave the vec usable still as long as you call it though functions.
  2. Use free to empty the vector and set the size and capacity to 0.
  3. If you realloc/compact while the vec size is 0 the capacity will become 1.
@@ -85,7 +85,7 @@ typedef enum
  5. You should not alter the size, capacity, or data, let the vec do it!
  6. When reading the code, if you find a function with a comment indicating it is internal, do not call it
  7. you can forget about most of the error handling and worry about it when it comes up
-	by using unpack_##type, ASSERT_ON_ERROR, and RETURN_ON_ERROR
+by using unpack_##type, ASSERT_ON_ERROR, and RETURN_ON_ERROR
 */
 
 #define ASSERT_ON_ERROR(err, func_name_string)                                                                                                                     \
@@ -141,6 +141,25 @@ typedef enum
 	}
 
 #define VEC_INITIAL_CAPACITY 0
+
+/*
+	Functions:
+	 bool (*empty)(this *);                                                                             
+	 size_t (*read_size)(this *);                                                                       
+	 size_t (*read_capacity)(this *);                                                                   
+	 Vec_Error (*free)(this *);                                                                         
+	 Vec_Error (*clear)(this *);                                                                        
+	 Vec_Error (*compact)(this *);                                                                      
+	 Vec_Error (*remove)(this *, size_t index);                                                         
+	 Vec_Error (*realloc)(this *, size_t capacity);                                                     
+	 Vec_Error (*push_back)(this *, type value);                                                        
+	 Vec_Error (*insert)(this *, size_t index, type value);                                             
+	 Vec_Error (*swap)(this *, size_t index0, size_t index1);                                           
+	 Return_##type (*find)(this *, type value);                                                         
+	 Return_##type (*at)(this *, size_t index);                                                         
+	 void (*free_obj)(type value);   
+*/
+
 
 /* define implementation */
 #define DEFINE_VEC(type, name, compare_func)                                                               \
@@ -308,7 +327,7 @@ typedef enum
 	{                                                                                                      \
 		RETURN_IF_NULL(v, "push_back_" #name, VEC_GIVEN_NULL_ERROR);                                       \
 		Vec_Error err = interal_try_resize_##name(v);                                                      \
-		RETURN_ON_ERROR(err, "push_back_" #type " (interal_try_resize)_" #name);                                         \
+		RETURN_ON_ERROR(err, "push_back_" #type " (interal_try_resize)_" #name);                           \
 		(v->data)[(v->size)++] = value;                                                                    \
 		return VEC_OK;                                                                                     \
 	}                                                                                                      \
@@ -368,7 +387,7 @@ typedef enum
 		if (init_err != VEC_OK)                                                                            \
 		{                                                                                                  \
 			fprintf(stderr, "Vec Init Error: in vector on line %d in file %s. \
- 	Vec_Error Code: %d \n",                                                                                \
+ Vec_Error Code: %d \n",                                                                                   \
 					__LINE__, __FILE__, init_err);                                                         \
 		}                                                                                                  \
 		assert(init_err == VEC_OK);                                                                        \
@@ -376,7 +395,7 @@ typedef enum
 	}
 
 /*
-	Creates vector, indended use is for debugging with mem_debug.h
+Creates vector, indended use is for debugging with mem_debug.h
 */
 #define CREATE_VEC(v, compare_func, type, name)     \
 	do                                              \
@@ -401,4 +420,4 @@ typedef enum
 		((v)->free_obj) = NULL;                     \
 	} while (0)
 
-#endif /*VEC_H*/
+#endif /*_VEC_H*/
