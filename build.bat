@@ -1,4 +1,4 @@
-gcc tests\log_test.c logger\logger.c -o test.exe
+gcc tests\stack_test.c logger\logger.c -o test.exe
 
 
 @echo off

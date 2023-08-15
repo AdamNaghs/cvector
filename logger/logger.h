@@ -9,7 +9,6 @@ typedef struct LogFile LogFile;
 struct LogFile
 {
   FILE *file;
-  bool isOpen;
   unsigned int entries;
 };
 

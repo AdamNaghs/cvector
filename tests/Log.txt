@@ -1,0 +1,28 @@
+
++----------+
+Log Opened - File: tests\log_test.c - Line: 7 - Tue Aug 15 02:15:00 2023
+
+1 | Tue Aug 15 02:15:00 2023
+  | File: tests\log_test.c - Line: 8 
+  -> Test
+
+2 | Tue Aug 15 02:15:00 2023
+  | File: tests\log_test.c - Line: 10 
+  -> This should be 100 : 100
+
+Log Closed - File: tests\log_test.c - Line: 12 - Tue Aug 15 02:15:00 2023
++----------+
+
++----------+
+Log Opened - File: tests\log_test.c - Line: 7 - Tue Aug 15 02:15:04 2023
+
+1 | Tue Aug 15 02:15:04 2023
+  | File: tests\log_test.c - Line: 8 
+  -> Test
+
+2 | Tue Aug 15 02:15:04 2023
+  | File: tests\log_test.c - Line: 10 
+  -> This should be 100 : 100
+
+Log Closed - File: tests\log_test.c - Line: 12 - Tue Aug 15 02:15:04 2023
++----------+

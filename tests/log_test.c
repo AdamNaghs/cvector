@@ -4,12 +4,12 @@
 
 int main(void)
 {
-    LogFile* l = LogOpen("Log.txt");
+    LogFile* l = LogOpen("tests\\Log.txt");
     Log(l,"Test");
 
     Logf(l,"This should be 100 : %d",100);
-    LogClose(l);
 
+    LogClose(l);
     MEM_DEBUG_END(stderr);
     return 0;
 }
