@@ -11,10 +11,10 @@ int main(void)
     for (i = 0; i < size; i++)
     {
         iStackPush(s, i);
-        printf("i = %d, top = %d, cap = %d\n", i, s->top, s->cap);
+        printf("i = %d, top = %d, cap = %llu\n", i, s->top, s->cap);
     }
     iStackPush(s, 5);
-    printf("5 == %d, top = %d, cap = %d\n", iStackPop(s), s->top, s->cap);
+    printf("5 == %d, top = %d, cap = %llu\n", iStackPop(s), s->top, s->cap);
     printf("top : 9 == %d\n", s->top);
     while (!iStackIsEmpty(s))
         printf("%d == %d, top = %d\n", --i, iStackPop(s), s->top);

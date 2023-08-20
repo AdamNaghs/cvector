@@ -18,8 +18,7 @@ int main()
     Vec_Int v = create_Vec_Int(NULL);//CREATE_VEC(&v, compare_ints, int, Vec_Int);
     //Vec_Int_init(&v,compare_ints);
     v.push_back(&v,1);
-
-    //alloc_test(0);
+    alloc_test(0);
     int *i = malloc(sizeof(int));
     int k;
     int *j = &k;
@@ -34,6 +33,6 @@ int main()
 
     //free(i);
     //(v.free)(&v);
-    MEM_DEBUG_END(stderr);
+    //MEM_DEBUG_END(stderr);
     return 0;
 }
